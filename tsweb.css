@@ -1,0 +1,82 @@
+BODY {
+	background-color: #eee;
+	font: 9pt Verdana,sans-serif;
+}
+BODY.subm {
+	background-color: #eee;
+	font: 9pt Verdana,sans-serif;
+}
+BODY.subm H1 { text-align: center; color: #602; }
+BODY.main H1 { text-align: center; color: #426; }
+TABLE {	font-size: 9pt; }
+TABLE.big { font-size: 10pt; }
+FORM.frm {
+	font: 9pt Verdana,sans-serif;
+}
+A { text-decoration: none; }
+A:hover { text-decoration: underline; }
+TR.od TD {
+	background-color: #eee; font-size: 10pt;
+}
+TR.ev TD {
+	background-color: #dde; font-size: 10pt;
+}
+TR.hdr TH {
+	background-color: #fdc; font-size: 11pt;
+}
+FORM.frm TD I {
+	font-size: 7pt;  font-style: normal
+}
+FORM.frm INPUT.submb {
+	color: #602; font: 12pt Verdana, Arial, sans-serif;
+	font-weight: bold; height: 24pt; background-color:#f95; 
+	border-width:1pt; border-style:outset; border-color:#fa8;
+}
+FORM.frm TR.od INPUT.rd { background-color: #eee; }
+FORM.frm TR.ev INPUT.rd { background-color: #dde; }
+FORM.frm INPUT {
+	background-color: #fff;  font-size: 11pt;  height: 16pt;
+}
+FORM.frm INPUT.sm {
+	background-color: #fff;  font-size: 9pt;  height: 16pt;
+}
+FORM.frm SELECT {
+	background-color: #fff;  font-size: 11pt;  height: 16pt;
+}
+FORM.frm OPTION {
+	background-color: #fff;  font-size: 11pt;  height: 16pt;
+}
+.err H2 { color: Red;  text-align: center; }
+.err H3 { color: Orange;  text-align: center; }
+.errm	{ color: Red;  text-align: center; }
+.suberr { color: Orange;  text-align: center; }
+BODY.err { font: 12pt Arial,sans-serif; text-align: center; }
+.newmsg { font: 14pt Arial, sans-serif; text-align: center; }
+
+.rok	{ color: Green }	
+.rwa	{ color: Red }
+.rft	{ color: Orange; font-weight: bold }
+.gremph { color: Green; font-style: italic }
+.green	{ color: Green; }
+PRE.cmt { font-size: 9pt; }
+/* TR { font-size: 12pt } */
+/* H2 { text-align: center } */
+TR.head { background-color: #EEE }
+TR.odd { background-color: #FFB }
+TR.even { background-color: #DEF }
+TD.ok { text-align: center; color: #0A0 }
+TD.wa { text-align: center; color: #F00 }
+TD.no { text-align: center; color: #000; font-weight: bold }
+TD.solv { text-align: center }
+TD.pen { text-align: right }
+TD.rk { text-align: center }
+TD.for { font-weight: bold; color: Red;  background-color: #FDD }
+TR.head A, A.tli { color: Black; text-decoration: none }
+TR.head A:hover, A.tli:hover { color: Brown; text-decoration: underline }
+TD { border-color: Black; }
+TR.fok { background-color: #80ff80; }
+TR.fwa { background-color: #ff8080; }
+TR.fle { background-color: #ffa0ff; }
+TR.fpc { background-color: #ffff80; }
+TR.fje { background-color: #000000; color: #ff0000; }
+TR.fno { background-color: #808080; }

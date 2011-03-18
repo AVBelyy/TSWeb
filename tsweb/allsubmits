@@ -1,0 +1,178 @@
+#!"C:\xampp\perl\bin\perl.exe"
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+
+#   output_html_header ($allword.'Submits List', 'subm');
+#   output_html_title ($allword.'Submits List');
+#$NetDebug = 3;
+login_error() if $CookieState <= 0;
+
+$MSG = openChannel ('MSG', 1);
+
+my ($all) = @FORM{'all'};
+$all = $all ? '1' : '0';
+my ($submid) = @FORM{'id'};
+$submid = '-1' if $submid eq '';
+
+$req = {
+   Team => $team, Password => $password, 
+   ContestId => $contestid,
+   DisableUnrequested => '1',
+   AllSubm => $all
+};
+$req->{Command} = $submid < 0 ? 'AllSubmits' : 'SubmReport';
+$req->{SubmID} = $submid if $submid >= 0;
+sendChannel ($MSG, $req);
+
+$got = 0;
+$ans = doreadChannel ($MSG);
+
+do {
+    if ($ans->{'ID'} eq $req->{'ID'}) {
+	$Err = $ans->{'Error'};
+	testsys_error ($Err) if $Err;
+	$got = 1;
+    } 
+
+#foreach $tmp (keys %$ans)
+#{
+#  $val = $ans->{$tmp};
+#  print "$tmp => $val\n";
+#}
+#foreach $age (values %ans)
+#{
+#	print "Value: $age\n";
+#}
+} while (!$got && ($ans = readChannel ($MSG)));
+
+#exit;
+
+error ("ID mismatch") unless $got;
+
+
+#-----
+error ("Protocol error") if $ans->{'Submits'} eq '';
+
+
+$hasfeed = 0;
+
+for (my $i = 0; $i < $ans->{'Submits'}; $i++) {
+  push @UnsClars, [$ans->{'SubmProb_'.$i}, $ans->{'SubmID_'.$i},
+                $ans->{'SubmTime_'.$i}, $ans->{'SubmRes_'.$i},
+                $ans->{'SubmTest_'.$i}, $ans->{'SubmCE_'.$i},
+                $ans->{'SubmAtt_'.$i}, $ans->{'SubmFeed_'.$i},
+                $ans->{'SubmCompiler_'.$i}, $ans->{'SubmTokenUsed_'.$i},
+                $ans->{'SubmScore_'.$i}, $ans->{'SubmTeam_'.$i},
+                $ans->{'SubmTL_'.$i}, $ans->{'SubmML_'.$i}];
+  $hasfeed = 1 if $ans->{'SubmFeed_'.$i};
+  $hasscore = 1 if $ans->{'SubmScore_'.$i} ne '';
+  $hasteam = 1 if $ans->{'SubmTeam_'.$i} ne '';
+  $hastl = 1 if $ans->{'SubmTL_'.$i} ne '';
+  $hasml = 1 if $ans->{'SubmML_'.$i} ne '';
+};
+
+$hastokens = ($ans->{'TokensAllowed'} > 0) && $hasfeed;
+
+if ($hasteam) {
+  @Clars = sort { $$b[1] <=> $$a[1] } @UnsClars;
+} else {
+  @Clars = sort { $$a[1] <=> $$b[1] } @UnsClars;
+}
+
+$allword = 'ALL ' if $hasteam and $submid < 0;
+
+sub output_table {
+    $table_name = $submid < 0 ? 'Submits List' : 'Submission Report';
+    output_html_header ($allword.$table_name, 'subm');
+    output_html_title ($allword.$table_name);
+    $feedhdr = '<TD>Feedback</TD>' if $hasfeed;
+    $tokenhdr = '<TD>Use Token</TD>' if $hastokens;
+    $scorehdr = '<TD>Score</TD>' if $hasscore;
+    $teamhdr = '<TD>Team</TD>' if $hasteam;
+    $tlhdr = '<TD>MaxTime</TD>' if $hastl;
+    $mlhdr = '<TD>MaxMem</TD>' if $hasml;
+    $causehdr = $hasteam ? 'Comment' : 'CE cause';
+    $options = '';
+    $options .= 'all=1' if $all;
+    $options = '?'.$options if $options ne '';
+#    print "Note: clarifcation requests will be supported after testsys upgrade, which is planned Wed Sep 10, 03:10 pm";
+    print "\n<H2 CLASS=errm>".&b_encode($error)."</H2>\n" if $error;
+    print "<TABLE BORDER=1 ALIGN=left CELLPADDING=2 CELLSPACING=3>";
+    $colcnt = 9 + $hasfeed + ($hastokens ? 1 : 0) + $hasscore + $hasteam + $hastl + $hasml;
+    print "<TR><TD COLSPAN=$colcnt><A HREF=$loccgiroot/allsubmits$options>Back to submission list</A></TD></TR>" if not $submid < 0;
+    print "<TR><TD COLSPAN=$colcnt><A HREF=$loccgiroot/index>Back to main page</A></TD></TR>";
+    print "<TR><TD>ID</TD><TD>Problem</TD><TD>Attempt</TD><TD>Time</TD><TD>Compiler</TD><TD>Result</TD><TD>TestN</TD>$tlhdr$mlhdr<TD>Text</TD><TD>$causehdr</TD>$feedhdr$tokenhdr$scorehdr$teamhdr</TR>";
+    for my $c (@Clars) {
+      my ($pr, $id, $tm, $res, $tn, $cause, $att, $feed, $compiler, $tokused, $score, $team, $tl, $ml) = @$c;
+#      $a = win2koi ($a);
+      $idoptions = "?id=$id";
+      $idoptions .= "&all=1" if $all;
+      $cause = &b_encode (dos2win ($cause)) if $cause;
+      $cause = "<A HREF=$cgiroot/allsubmits$idoptions>View CE report</A>" if $res eq 'CE' and $submid < 0;
+      $cause = "&nbsp;" if $cause eq '';
+      $id = "&nbsp;" if $id eq '';
+      $pr = "&nbsp;" if $pr eq '';
+      $tm = "&nbsp;" if $tm eq '';
+      $tverbose = sprintf ("%d:%02d:%02d", int ($tm / 3600), int ($tm / 60) % 60, $tm % 60);
+      $tm = "$tm ($tverbose)" if $tm ne '';
+      $compiler = "&nbsp;" if $compiler eq '';
+      $res = "&nbsp;" if $res eq '';
+      $tn = "&nbsp;" if $tn eq '';
+      $att = "&nbsp;" if $att eq '';
+      $tl = "&nbsp;" if $tl eq '';
+      $ml = "&nbsp;" if $ml eq '';
+      $trclass = ' CLASS="fok"' if $res eq 'OK';
+      $trclass = ' CLASS="fwa"' if ($res eq 'WA') or ($res eq 'PE') or ($res eq 'CE') or ($res eq 'RE') or ($res eq 'RT') or ($res eq 'SV');
+      $trclass = ' CLASS="fle"' if ($res eq 'TL') or ($res eq 'ML');
+      $trclass = ' CLASS="fpc"' if $res eq 'PC';
+      $trclass = ' CLASS="fje"' if ($res eq 'JE') or ($res eq 'FT');
+      if ($hasfeed) {
+        if ($feed) {
+          $feedstr = "<TD><A HREF=$cgiroot/feedback?id=$id>View</A></TD>";
+        } else {
+          $feedstr = "<TD>&nbsp;</TD>";
+        }
+        if ($hastokens) {
+          if ($tokused) {
+            $tokenstr = "<TD><B>Used!</B></TD>";
+          } else {
+            $tokenstr = "<TD><A HREF=$cgiroot/usetoken?id=$id>Use</A></TD>";
+          }
+        }
+      }
+      $scorestr = $score ne '' ? "<TD>$score</TD>" : "<TD>&nbsp;</TD>" if $hasscore;
+      $teamstr = $team ne '' ? "<TD>".b_encode (dos2win ($team))."</TD>" : "<TD>&nbsp;</TD>" if $hasteam;
+      $tlstr = $tl ne '' ? "<TD>".b_encode (dos2win ($tl))."</TD>" : "<TD>&nbsp;</TD>" if $hastl;
+      $mlstr = $ml ne '' ? "<TD>".b_encode (dos2win ($ml))."</TD>" : "<TD>&nbsp;</TD>" if $hasml;
+#     if ($ans eq '1') {$ans = 'Yes';} else {$ans = 'No';}
+#      if ($bc eq '1') {$bc = 'Yes';} else {$bc = 'No';}
+      print "<TR$trclass><TD>$id</TD><TD>$pr</TD><TD>$att</TD><TD>$tm</TD><TD>$compiler</TD><TD>$res</TD><TD>$tn</TD>$tlstr$mlstr<TD><A HREF=$cgiroot/viewsubmit?id=$id>View</A></TD><TD>$cause</TD>$feedstr$tokenstr$scorestr$teamstr</TR>";
+    };
+    print "<TR><TD COLSPAN=$colcnt><A HREF=$loccgiroot/allsubmits$options>Back to submission list</A></TD></TR>" if not $submid < 0;
+    print "<TR><TD COLSPAN=$colcnt><A HREF=$loccgiroot/index>Back to main page</A></TD></TR>";
+    print "</TABLE>";
+
+    print <<PARTY;
+</BODY></HTML>
+PARTY
+};
+
+
+
+sub f_error {
+    $error = shift unless $error;
+    output_table();
+    exit;
+}
+
+f_error ($error) if $error ne '';
+
+#if ($reqmethod ne 'POST') {
+    output_table();
+#    exit;
+#}
+#output_html_end();

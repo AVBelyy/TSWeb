@@ -1,0 +1,96 @@
+#!c:/soft/perl/bin/perl.exe
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+require GenMonitor;
+
+$AlwaysText = int($FORM{'text'});
+$default_refresh = 128;
+$cutoff = int($FORM{'when'});
+$submco = int($FORM{'s'});
+
+login_error() if $CookieState <= 0;
+
+$MON = openChannel ('MONITOR', 1);
+
+$time = time();
+sendChannel ($MON, $req = {
+    Team => $team, Password => $password,
+    ContestId => $contestid });
+
+selectChannels ($Timeout, $MON);
+
+$ans = doreadChannel ($MON); 
+$Err = $ans->{'Error'} if defined($ans->{'Error'});
+$ans0 = $ans if ($ans->{'ID'} eq $req->{'ID'});
+
+closeChannel ($MON);
+
+if (!defined ($ans0)) {
+    error ('*** Could not connect to TESTSYS ***');
+    exit;
+}
+
+if ($Err) {
+    testsys_error ($Err);
+    exit;
+}
+
+if (!defined ($ans0->{'Monitor'}) && !defined ($ans0->{'History'})) {
+    error ("No monitor available. Contest not started yet?");
+    exit;
+}
+
+$montext = &dos2win ($ans0->{'Monitor'});
+
+if ($AlwaysText || !defined ($ans0->{'History'})) {
+    @Monitor = split (/\r?\n/, $montext);
+    output_html_title ('Contest Monitor');
+    print "<PRE>\n", join (" <BR />\n", map { &b_encode($_) } @Monitor, '');
+    print "</PRE><A HREF=monitor>Refresh</A>";
+    output_html_end ();
+    exit;
+}
+    
+#$data = &win2koi ($ans0->{'History'});
+$data = $ans0->{'History'};
+$showtimes = !$FORM{'brief'} unless defined $showtimes;
+
+$scr_name = 'monitor' unless ($scr_name);
+
+$other_name = ($scr_name eq 'monitor') ? 'minitor' : 'monitor';
+$other_desc = ($scr_name eq 'monitor') ? 'Brief version' : 'Complete version';
+
+$self = $scr_name;
+$refresh = int($FORM{'refresh'});
+$refresh = '' if ($refresh < 16 || $refresh > 14400);
+$refline = $refresh ? "Refresh: $refresh;URL=$self?refresh=$refresh\n" : '';
+
+$Monitor = GenMonitor ($montext . "\n\x1a\n" . $data, $showtimes, $cutoff, $submco);
+
+if ($MonError) {
+    error ("Monitor parse error on line $MonLine: $MonError");
+    exit;
+}
+
+start_html ($refline);
+output_html_header ($contname, 'monit');
+#<A HREF=submit>Submit</A>&nbsp;&nbsp;
+$navbar = <<END;
+<P><A HREF=index>Main page</A>&nbsp;&nbsp;
+<A HREF=$other_name>$other_desc</A>&nbsp;&nbsp;
+<A HREF=$self?refresh=$default_refresh>Auto-refresh</A></P>
+END
+print <<END;
+$navbar
+<HR />
+<H1>$contname</H1>
+$Monitor
+$navbar
+</BODY></HTML>
+END
+
+1;

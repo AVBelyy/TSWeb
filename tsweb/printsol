@@ -1,0 +1,126 @@
+#!c:/soft/perl/bin/perl.exe
+$bigsubm = 1;
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+
+login_error() if $CookieState <= 0;
+
+
+#sendChannel ($PRTS, $req = {
+#	      Team => $team, Password => $password, 
+#	      ContestId => $contestid});
+
+#&selectAllChannels ($Timeout);
+#
+#$got = 0;
+#$ans = doreadChannel ($PRTS);
+#do {
+#    if ($ans->{'ID'} eq $req->{'ID'}) {
+#	$Err = $ans->{'Error'};
+#	testsys_error ($Err) if $Err;
+#	$got = 1;
+#    } 
+#} while (!$got && ($ans = readChannel ($PRTS)));
+
+#error ("ID mismatch") unless $got;
+
+
+($prob, $lang, $text) = @FORM{'prob', 'lang', 'solution'};
+
+sub output_form {
+    output_html_header ('Testsys PRINTSOL', 'subm');
+    output_html_title ('Printsol');
+    print "\n<H2 CLASS=errm>".&b_encode($error)."</H2>\n" if $error;
+    print <<PART1;
+<FORM ACTION=$loccgiroot/printsol ENCTYPE=multipart/form-data METHOD=$POSTMETHOD CLASS=frm>
+<TABLE ALIGN=center CELLPADDING=2 CELLSPACING=3>
+<TR CLASS=od><TD>Solution:<BR><I>Attach here your solution</I></TD>
+ <TD><INPUT CLASS=sm SIZE=32 TYPE=FILE NAME=file></TD></TR>
+<TR CLASS=ev><TD>Solution text:<BR><I>...or paste it here</I></TD>
+ <TD><TEXTAREA NAME=solution COLS=20 ROWS=4 WRAP=VIRTUAL>$texta</TEXTAREA></TD></TR>
+<TR><TD></TD><TD><BR>
+ <INPUT CLASS=submb TYPE=SUBMIT VALUE="Printsol"></TD></TR>
+<TR><TD COLSPAN=2><A HREF=$loccgiroot/index>Back to main page</A></TD></TR>
+$submvia
+ </TABLE>
+</FORM></BODY></HTML>
+PART1
+exit;
+}
+
+sub f_error {
+    $error = shift unless $error;
+    output_form();
+    exit;
+}
+
+if ($reqmethod ne 'POST') {
+    output_form();
+    exit;
+}
+
+if (!$fparname && $text) {
+  $fparname = 'file';
+  $conttype = 'text/plain';
+  $filepath = 'a.txt';
+  $FILE{'file'} = $filedata = $text;
+}
+
+f_error ($error) if $error ne '';
+f_error ('File expected') unless ($fparname eq 'file' && $FILE{'file'} ne '');
+$filepath =~ s/^(.*)[\\\/:]//g;
+$filename = $filepath;
+$filename =~ s/\.([A-Za-z0-9_]*)$//g;
+f_error ("Unsupported content type `$conttype'")
+  unless ($allow_any_ctype || $conttype eq 'application/octet-stream' || 
+	  $conttype =~ /^text\/plain(; charset=(.*))?$/ ||
+	  $conttype =~ /^text\/x-c(\+\+)?src$/);
+
+$to = $filedata / 16384;
+$to = 4 if $to > 4;
+$SendTimeout = ($to + 2) * $Timeout;
+
+$PRTS = openChannel ('PRINTSOL', 1);
+
+sendChannel ($PRTS, $req = { 
+    'Team' => $team, 'Password' => $password, 
+    'ContestId' => $contestid,
+    'Contents' => $filedata,
+    'Source' => $filename} );
+
+&selectWriteChannels ($to, $PRTS);
+&selectChannels ($Timeout, $PRTS);
+recvChannel ($PRTS);
+while ($answ = readChannel ($PRTS)) {
+    if ($req->{'ID'} eq $answ->{'ID'}) {
+	$err = $answ->{'Error'};
+	if ($err) {
+	    $err = b_encode ($err);
+	    output_html_title ('PrintSol Error');
+	    print "Testsys Response: <SPAN CLASS=errm>$err</SPAN><BR />";
+	} else {
+	    output_html_title ('PrintSol Status');
+	    print "Your solution has been successfully sent to printer!<BR />";
+	}
+	$outp = 1;
+	last;
+    }
+}
+
+if (!$outp) {
+    output_html_title ('Printsol Status');
+    print "Your solution has been sent to printer. However, no response has been received from Testsys.<BR />\n";
+}
+    
+closeChannel ($PRTS);
+
+print <<END;
+<HR />
+<A HREF=printsol>PrintSol again</A>&nbsp;&nbsp;<A HREF=index.html>Main page</A>
+END
+
+output_html_end();

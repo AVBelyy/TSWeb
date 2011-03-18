@@ -1,0 +1,190 @@
+#!c:/soft/perl/bin/perl.exe
+$bigsubm = 1;
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+
+login_error() if $CookieState <= 0;
+
+# $MSG = openChannel ('MSG', 1);
+
+$SUBM = openChannel ('SUBMIT', 1);
+
+sendChannel ($SUBM, $req = {
+	      Team => $team, Password => $password, 
+	      ContestId => $contestid,
+	      Request => 'ContestData' });
+
+#sendChannel ($MSG, $reqm = {
+#	      Team => $team, Password => $password, 
+#	      AllMessages => 'Yes', DisableUnrequested => '1' }) if $MSG;
+
+&selectAllChannels ($Timeout);
+
+#recvChannel ($MSG) if $MSG;
+#while ($MSG && ($ans = readChannel ($MSG))) {
+#    $Err = $ans->{'Error'};
+#    testsys_error ($Err) if $Err;
+#    $wtc = $ans->{'WaitingCount'} if $ans->{'ID'} eq $reqm->{'ID'};
+#}
+
+$got = 0;
+$ans = doreadChannel ($SUBM);
+do {
+    if ($ans->{'ID'} eq $req->{'ID'}) {
+	$Err = $ans->{'Error'};
+	testsys_error ($Err) if $Err;
+	$got = 1;
+    } 
+} while (!$got && ($ans = readChannel ($SUBM)));
+
+error ("ID mismatch") unless $got;
+
+$pmode = 0;
+for (split (/\r?\n/, &dos2win ($ans->{'Data'}))) {
+    if (/VERSION=(.*)/) { $ver = $1; }
+    elsif ($_ eq '') { $pmode = 2; }
+    elsif ($_ eq 'COMPILERS:') { $pmode = 1; }
+    elsif (!$pmode) { $cname = $_ }
+    elsif ($pmode == 1 && /^\.([a-z]+):(.*)/) {
+	$exts{$1} = $2;
+	push @Compilers, [ $1, $2 ]
+    } elsif ($pmode == 2 && /^([A-Za-z0-9_\-]+)=(.*)/) {
+	$prob{$1} = $2;
+    } else { error ("Unknown line $_ in ContestData response"); }
+}
+
+error ("No problems defined") unless %prob;
+error ("No compilers defined") unless @Compilers;
+
+($prob, $lang, $text) = @FORM{'prob', 'lang', 'solution'};
+
+sub output_form {
+    output_html_header ('Testsys Submit', 'subm');
+    output_html_title ('Submit');
+    print "\n<H2 CLASS=errm>".&b_encode($error)."</H2>\n" if $error;
+    print <<PART1;
+<FORM ACTION=$loccgiroot/submit ENCTYPE=multipart/form-data METHOD=$POSTMETHOD CLASS=frm>
+<TABLE ALIGN=center CELLPADDING=2 CELLSPACING=3>
+<TR CLASS=od><TD>Problem:<BR><I>Choose here the problem id...</I></TD>
+ <TD><SELECT NAME=prob>
+PART1
+    for my $id (sort keys %prob) {
+	my $nam = $prob{$id};
+# HACK !!!
+	$nam =~ s/---/\&mdash;/g;
+	$nam = $nam eq '' ? $id : "$id: $nam";
+	my $sel = $id eq $prob ? ' SELECTED' : '';
+	print "<OPTION VALUE=$id$sel>$nam</OPTION>\n";
+    }
+    print <<PART2;
+</SELECT></TD></TR>
+<TR CLASS=ev><TD>Language:<BR><I>Choose one of compilers</I></TD>
+ <TD><SELECT NAME=lang>
+PART2
+    my $i = 0;
+    for my $c (@Compilers) {
+	$i++;
+	my ($id, $nam) = @$c;
+	$nam = &b_encode ($nam);
+	$nam = $nam eq '' ? $id : "$id: " . &b_encode($nam);
+	my $sel = ($i == $lang) ? ' SELECTED' : '';
+	print "<OPTION VALUE=$i$sel>$nam</OPTION>\n";
+    }
+    my $texta = $text;
+    print <<END;
+</SELECT></TD></TR>
+<TR CLASS=od><TD>Solution:<BR><I>Attach here your solution</I></TD>
+ <TD><INPUT CLASS=sm SIZE=32 TYPE=FILE NAME=file></TD></TR>
+<TR CLASS=ev><TD>Solution text:<BR><I>...or paste it here</I></TD>
+ <TD><TEXTAREA NAME=solution COLS=20 ROWS=4 WRAP=VIRTUAL>$texta</TEXTAREA></TD></TR>
+<TR><TD></TD><TD><BR>
+ <INPUT CLASS=submb TYPE=SUBMIT VALUE="Submit"></TD></TR>
+<TR><TD COLSPAN=2><A HREF=$loccgiroot/index>Back to main page</A></TD></TR>
+$submvia
+ </TABLE>
+</FORM></BODY></HTML>
+END
+exit;
+}
+
+sub f_error {
+    $error = shift unless $error;
+    output_form();
+    exit;
+}
+
+if ($reqmethod ne 'POST') {
+    output_form();
+    exit;
+}
+
+if (!$fparname && $text) {
+  $fparname = 'file';
+  $conttype = 'text/plain';
+  $filepath = 'a.txt';
+  $FILE{'file'} = $filedata = $text;
+}
+
+f_error ($error) if $error ne '';
+f_error ('File expected') unless ($fparname eq 'file' && $FILE{'file'} ne '');
+$filepath =~ s/^(.*)[\\\/:]//g;
+$filename = $filepath;
+$filename =~ s/\.([A-Za-z0-9_]*)$//g;
+f_error ("Unsupported content type `$conttype'")
+  unless ($allow_any_ctype || $conttype eq 'application/octet-stream' || 
+	  $conttype =~ /^text\/plain(; charset=(.*))?$/ ||
+	  $conttype =~ /^text\/x-c(\+\+)?src$/);
+
+f_error ("Unknown problem `$prob'") unless defined($prob{$prob});
+f_error ("No language selected") unless ($lang =~ /^\d+$/ && 
+					 $lang > 0 && $lang <= @Compilers);
+
+$to = $filedata / 16384;
+$to = 4 if $to > 4;
+$SendTimeout = ($to + 2) * $Timeout;
+
+sendChannel ($SUBM, $req = { 
+    'Team' => $team, 'Password' => $password, 
+    'ContestId' => $contestid,
+    'Problem' => $prob, 'Contents' => $filedata,
+    'Source' => $filename,
+    'Compiler' => $Compilers[$lang-1][1],
+    'Extension' => $Compilers[$lang-1][0] } );
+
+&selectWriteChannels ($to, $SUBM);
+&selectChannels ($Timeout, $SUBM);
+recvChannel ($SUBM);
+while ($answ = readChannel ($SUBM)) {
+    if ($req->{'ID'} eq $answ->{'ID'}) {
+	$err = $answ->{'Error'};
+	if ($err) {
+	    $err = b_encode ($err);
+	    output_html_title ('Submit Error');
+	    print "Testsys Response: <SPAN CLASS=errm>$err</SPAN><BR />";
+	} else {
+	    output_html_title ('Submit Status');
+	    print "Your submission has been acknowledged! Good luck!<BR />";
+	}
+	$outp = 1;
+	last;
+    }
+}
+
+if (!$outp) {
+    output_html_title ('Submit Status');
+    print "Your solution has been submitted. However, no response has been received from Testsys.<BR />\n";
+}
+    
+closeChannel ($SUBM);
+closeChannel ($MSG) if $MSG;
+
+print <<END;
+<HR />
+<A HREF=submit>Submit again</A>&nbsp;&nbsp;<A HREF=index.html>Main page</A>
+END
+
+output_html_end();

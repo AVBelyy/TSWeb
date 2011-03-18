@@ -1,0 +1,6 @@
+BODY {
+	background-color: #eee;
+	font: 9pt Verdana,sans-serif;
+}
+H1 { text-align: center; color: #602; }
+BODY.err { font: 12pt Arial,sans-serif; text-align: center; }

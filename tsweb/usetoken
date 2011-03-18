@@ -1,0 +1,68 @@
+#!c:/soft/perl/bin/perl.exe
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+
+login_error() if $CookieState <= 0;
+
+my ($id) = @FORM{'id'};
+
+$MSG = openChannel ('MSG', 1);
+
+sendChannel ($MSG, $req = {
+	      Team => $team, Password => $password, 
+	      ContestId => $contestid,
+	      DisableUnrequested => '1',
+	      SubmID => $id,
+	      Command => 'UseToken'});
+
+
+$got = 0;
+$ans = doreadChannel ($MSG);
+do {
+    if ($ans->{'ID'} eq $req->{'ID'}) {
+	$Err = $ans->{'Error'};
+	testsys_error ($Err) if $Err;
+	$got = 1;
+    } 
+} while (!$got && ($ans = readChannel ($MSG)));
+
+
+error ("ID mismatch") unless $got;
+
+
+$OK = $ans->{'OK'};
+
+sub output_table {                                  
+    output_html_header ("Result of using token for submission $id", 'subm');
+    output_html_title ("Result of using token for submission $id");
+    print "\n<H2 CLASS=errm>".&b_encode($error)."</H2>\n" if $error;
+    print "\nToken successfully used, you can view <A HREF=$cgiroot/feedback?id=$id>full feedback for submission $id</A><BR>" if $OK;
+    print "<A HREF=$loccgiroot/index>Back to main page</A>\n";
+    print <<PART1;
+</BODY></HTML>
+PART1
+};
+
+
+sub f_error {
+    $error = shift unless $error;
+    output_html_header ('Error', 'err');
+    output_html_title ('Error');
+    print "\n<H2 CLASS=errm>".&b_encode($error)."</H2>\n";
+    print $id;
+    print "</BODY></HTML>";
+    exit;
+}
+
+f_error ($error) if $error ne '';
+
+
+#if ($reqmethod ne 'POST') {
+    output_table();
+#    exit;
+#}
+#output_html_end();

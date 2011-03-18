@@ -1,0 +1,5 @@
+#!"C:\xampp\perl\bin\perl.exe"
+$scr_name = 'minitor';
+$showtimes = 0;
+
+require 'monitor';

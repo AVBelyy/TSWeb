@@ -1,0 +1,150 @@
+#!"C:\xampp\perl\bin\perl.exe"
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+
+$Endt = time + $ErrorDelay;
+
+if ($FORM{'op'} eq 'changecontest') {
+    $contestid = @FORM{'newcontestid'};
+    $CookieState = 2;
+    start_html("Refresh: 0;URL=$cgiroot/index.html");
+    output_html_header ('Redirect Page', 'subm');
+    print <<HTML;
+<DIV ALIGN=center>
+Your contest has beend changed to $contestid, $team!<BR />
+Click <A HREF=index.html>here</A> if you are not redirected automatically.
+</DIV>
+HTML
+    output_html_end();
+    exit;
+}
+
+
+if ($FORM{'op'} eq 'login') {
+    error ('Invalid team name') unless valid_teamname ($FORM{'team'});
+    error ('Non-empty password expected') unless $FORM{'password'} ne '';
+    ($team, $password, $contestid) = @FORM{'team', 'password', 'contestid'};
+    $CookieState = 2;
+    start_html("Refresh: 0;URL=$cgiroot/index.html");
+    output_html_header ('Redirect Page', 'subm');
+    print <<HTML;
+<DIV ALIGN=center>
+Thank you for logging in, $team!<BR />
+Click <A HREF=index.html>here</A> if you are not redirected automatically.
+</DIV>
+HTML
+    output_html_end();
+    exit;
+}
+
+if ($FORM{'op'} eq 'logout') {
+    my $tm = $CookieState > 0 ? ", $team" : '';
+    $CookieState = -4;
+    start_html("Refresh: 0;URL=$cgiroot/index.html");
+    output_html_header ('Redirect Page', 'subm');
+    print <<HTML;
+<DIV ALIGN=center>
+Thank you for logging out$tm!<BR />
+Click <A HREF=index>here</A> if you are not redirected automatically.
+</DIV>
+HTML
+    output_html_end();
+    exit;
+}
+    
+if ($CookieState <= 0) 
+{
+    my ($team, $password, $contestid) = @FORM{'team', 'password', 'contestid'};
+    start_html();
+    output_html_header ('', 'main');
+    output_html_title ('Testsys/Web Login');
+    print "<span class=err>Your session data is missing, expired or invalid.</span>\n"
+	if $CookieState < 0;
+    print "You are currently not logged in.<BR />\n";
+    my $pt = &parm_encode ($team);
+    my $out_contid = &parm_encode ($contestid);
+    my $ContId = "<TR><TD>Contest ID (optional):</TD><TD><INPUT NAME=contestid SIZE=16 $out_contid /></TD></TR>" if $allow_contid;
+    print <<FORM;
+<FORM ACTION=index METHOD=POST CLASS=frm>
+<TABLE>
+<TR><TD>Team: <INPUT NAME=team SIZE=8 $pt />
+Password: </TD><TD><INPUT NAME=password TYPE=PASSWORD SIZE=16 />
+<INPUT NAME=op TYPE=SUBMIT class=submb VALUE="login" /></TD></TR />
+$ContId
+</TABLE>
+</FORM><A HREF=index?op=logout>Remove all cookies</A>
+FORM
+    output_html_end ();
+    exit;
+}
+
+$PreLine1 = "You are currently logged in as <B>$team</B>.&nbsp;&nbsp; <A HREF=index?op=logout>Log Out</A><BR /><HR /><A HREF=submit>Submit</A>&nbsp;&nbsp;<A HREF=monitor>Monitor</A>&nbsp;&nbsp;<A HREF=clars>Clarifications</A>&nbsp;&nbsp;<A HREF=allsubmits>Submissions</A>";
+$Line1 = "$PreLine1 <BR /><HR />\n";
+
+$MSG = openChannel ('MSG', 1);
+
+sendChannel ($MSG, $req = {
+	      Team => $team, Password => $password, 
+	      ContestId => $contestid,
+	      AllMessages => 'Yes',
+	      DisableUnrequested => '1' });
+# &selectChannels ($Timeout, $MSG);
+recvChannel ($MSG);
+$ans = doreadChannel ($MSG);
+if (!$ans) {
+    output_html_title ('Error');
+    print "$Line1<SPAN CLASS=err>*** Cannot connect to TESTSYS ***</SPAN>\n";
+    output_html_end();  exit;
+}
+$Err = $ans->{'Error'};
+if ($Err ne '') { 
+    sleep(1) while time < $Endt;
+    output_html_title ('Error');
+    print "$Line1\nTestsys Response: <SPAN CLASS=err>$Err</SPAN>\n";
+    output_html_end();  exit; }
+error ("ID mismatch") unless $ans->{'ID'} eq $req->{'ID'};
+
+output_html_title();
+
+$wtc = int($ans->{'WaitingCount'});
+$jury = $ans->{'JuryMode'} ? 1 : 0;
+$StatRef = "&nbsp;&nbsp;<A HREF=$ans->{'StatementsLink'}>Statements</A>" if $ans->{'StatementsLink'};
+$PrntRef = "&nbsp;&nbsp;<A HREF=printsol>Print Solution</A>" if $allow_printsol;
+$ListRef = "&nbsp;&nbsp;<A HREF=contests?mask=$contlist_mask>List of all contests</A>" if $contlist_mask;
+$JuryRef = "&nbsp;&nbsp;<A HREF=allsubmits?all=1>ALL submissions</A>" if $jury;
+$Line1 = "$PreLine1$StatRef$PrntRef$ListRef$JuryRef<BR /><HR />";
+print $Line1;
+$wtp = $wtc ? "<SPAN CLASS=wtp><A HREF=getnewmsg>$wtc new messages</A> pending.</SPAN>" : '';
+#@AllMsg = split (/\r?\n/, &win2koi ($ans->{'AllMessages'}));
+@AllMsg = split (/\r?\n/, $ans->{'AllMessages'});
+if (!@AllMsg) { print "\n<B>No old messages yet. $wtp</B><BR /> \n"; }
+else {
+    print "\n<B>Old messages: $wtp</B><BR /><BR />\n";
+    for (@AllMsg) {
+	print "&nbsp;" . &b_encode ($_) . " <BR />\n";
+    }
+    print "<BR />\n";
+}
+
+$contname = &b_encode (&dos2win ($ans->{'ContestName'}));
+$teamname = &b_encode (&dos2win ($ans->{'TeamName'}));
+
+print <<USEFUL;
+<BR /><HR>Some useful information:<BR />
+TestSys version: $ans->{'Version'}<BR />
+Assigned contest: $ans->{'ContestId'} ($contname)<BR />
+Contest starts at $ans->{'ContestStart'} and lasts $ans->{'ContestDuration'} minutes, current TestSys time is $ans->{'ServerNow'}</BR>
+You are $teamname<BR />
+USEFUL
+#DEBUG INFO (ignore plz): $contestid<BR />
+
+closeChannel ($MSG);
+
+print "<BR /><HR><A HREF=submit>Submit</A>&nbsp;&nbsp;<A HREF=monitor>Monitor</A>&nbsp;&nbsp;<A HREF=clars>Clarifications</A>";
+print "&nbsp;&nbsp;<A HREF=allsubmits>Submissions</A>$StatRef$PrntRef$ListRef$JuryRef\n";
+output_html_end ();
+

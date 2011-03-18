@@ -1,0 +1,106 @@
+#!c:/soft/perl/bin/perl.exe
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+
+login_error() if $CookieState <= 0;
+
+$confirm = $FORM{'confirm'};
+
+output_html_title ('New Messages', 'getnm');
+
+$MSG = openChannel ('MSG');
+
+#sendChannel ($MSG, $req = {
+#   Team => $team, Password => $password,
+#    ContestId => $contestid,
+#    Command => 'DisableUnrequested'});
+#
+#recvChannel ($MSG);
+
+sendChannel ($MSG, $savreq = {
+    Team => $team, Password => $password,
+    ContestId => $contestid,
+    Command => 'WaitingCount'});
+
+#sendChannel ($MSG, $req = {
+#    Team => $team, Password => $password,
+#    ContestId => $contestid,
+#    Command => 'EnableUnrequested'});
+
+sub parse_msgs {
+    while ($ans = $i ? readChannel ($MSG) : doreadChannel ($MSG)) {
+	$i++;
+	$Err = $ans->{'Error'};
+	if ($Err ne '') { print "Testsys Response: <SPAN CLASS=err>$Err</SPAN>\n";
+			  output_html_end();  exit; }
+	if ($ans->{'ID'} eq $savreq->{'ID'}) {
+	    $wtc = int($ans->{'WaitingCount'});
+	    next;
+	}
+	if ($ans->{'ID'} ne '' && defined($ans->{'Message'})) {
+	   # $text = &win2dos ($ans->{'Message'});
+	   	$text = $ans->{'Message'};
+	    $ID = $ans->{'ID'};
+	    last;
+	}
+    }
+    return $text;
+}
+
+
+$att = $i = 0;
+$wtc = 'no';
+do {
+    $att++;
+#    if ($att > 5) sleep (0.1);
+    recvChannel ($MSG);
+    parse_msgs();
+} while (($wtc > 0 || $wtc eq 'no') && $text eq '' && $att < 2);
+
+if ($confirm eq $text && $text ne '') {
+    sendChannel ($MSG, { ID => $ID, Command => 'DisableUnrequested' });
+    selectWriteChannels (2.5, $MSG);
+    sleep (1.0);
+#    recvChannel ($MSG);
+#    doreadChannel ($MSG);
+    closeChannel ($MSG);
+    $addmsg = (--$wtc > 0) ? " <A HREF=getnewmsg>$wtc more pending messages</A> reported." : '';
+    print "Confirmation sent.$addmsg\n";
+    print "<BR /><BR /><A HREF=index.html>Main page</A>\n" unless $winny;
+    output_html_end();  exit;
+} 
+#else {
+#my $v1 = b_encode ($confirm);
+#my $v2 = b_encode ($text);
+#if ($text ne '' && $confirm ne '') {
+#    print <<PART1;
+#$v1 $v2 $FORM{'botva'} $FORM{'confirm'}
+#PART1
+#    output_html_end();
+#    exit;
+#}
+#}
+
+
+if (!$i) {
+    print "<SPAN CLASS=errm>*** Cannot connect to TESTSYS ***</SPAN>\n";
+    print "<BR /><BR /><A HREF=index.html>Main page</A>\n" unless $winny;
+    output_html_end();  exit;
+}
+
+unless ($text) {
+    print "Sorry, no new messages ($wtc pending messages reported).\n";
+    print "<BR /><BR /><A HREF=index.html>Main page</A>\n" unless $winny;
+    output_html_end();
+    exit;
+}
+
+$conftext = &query_encode_robust ($text);
+
+print "<SPAN CLASS=newmsg>" . &b_encode ($text) . "</SPAN><BR /><BR />\n";
+print "Click <A HREF=getnewmsg?confirm=$conftext>HERE</A> to confirm.\n";
+output_html_end();

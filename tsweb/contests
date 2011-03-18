@@ -1,0 +1,64 @@
+#!c:/soft/perl/bin/perl.exe
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+
+$MSG = openChannel ('MSG', 1);
+
+my ($mask) = @FORM{'mask'};
+
+
+sendChannel ($MSG, $req = {
+	      Team => $team, Password => $password, 
+	      ContestId => $contestid,
+	      DisableUnrequested => '1',
+	      Command => 'ListContests',
+	      Mask => $mask});
+
+
+$got = 0;
+$ans = doreadChannel ($MSG);
+do {
+    if ($ans->{'ID'} eq $req->{'ID'}) {
+	$Err = $ans->{'Error'};
+	testsys_error ($Err) if $Err;
+	$got = 1;
+    } 
+} while (!$got && ($ans = readChannel ($MSG)));
+
+
+error ("ID mismatch") unless $got;
+
+$Contests = dos2win($ans->{'Contests'});
+
+sub output_table {                                  
+    output_html_header ("List of contests");
+    output_html_title ("List of contests");
+    print "\n<H2 CLASS=errm>".&b_encode($error)."</H2>\n" if $error;
+    print <<PART1;
+<TABLE BORDER=1 ELLPADDING=2 CELLSPACING=3>
+<TR CLASS="head"><TH>Contest ID<BR/><SMALL>Click to enter</SMALL></TH><TH>Contest name<BR/><SMALL>Click to read statements</SMALL></TH><TH>State</TH><TH>Started at</TH><TH>Teams count</TH></TR>
+$Contests
+</TABLE>
+<P><A HREF="index.html">Back to main page</A></P>
+</BODY></HTML>
+PART1
+};
+
+
+sub f_error {
+    $error = shift unless $error;
+    output_html_header ('Error', 'err');
+    output_html_title ('Error');
+    print "\n<H2 CLASS=errm>".&b_encode($error)."</H2>\n";
+    print $id;
+    print "</BODY></HTML>";
+    exit;
+}
+
+f_error ($error) if $error ne '';
+
+output_table();

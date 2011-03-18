@@ -1,0 +1,57 @@
+#!c:/soft/perl/bin/perl.exe
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+
+login_error() if $CookieState <= 0;
+
+my ($id) = @FORM{'id'};
+
+$MSG = openChannel ('MSG', 1);
+
+sendChannel ($MSG, $req = {
+	      Team => $team, Password => $password, 
+	      ContestId => $contestid,
+	      DisableUnrequested => '1',
+	      SubmID => $id,
+	      Command => 'SubmText'});
+
+
+$got = 0;
+$ans = doreadChannel ($MSG);
+do {
+    if ($ans->{'ID'} eq $req->{'ID'}) {
+	$Err = $ans->{'Error'};
+	testsys_error ($Err) if $Err;
+	$got = 1;
+    } 
+} while (!$got && ($ans = readChannel ($MSG)));
+
+
+error ("ID mismatch") unless $got;
+
+sub f_error {
+    $error = shift unless $error;
+    output_html_header ('Error', 'err');
+    output_html_title ('Error');
+#    print "Note: clarifcation requests will be supported after testsys upgrade, which is planned Wed Sep 10, 03:10 pm";
+    print "\n<H2 CLASS=errm>".&b_encode($error)."</H2>\n";
+    print $id;
+    print "</BODY></HTML>";
+    exit;
+}
+
+f_error ($error) if $error ne '';
+
+#-----
+print "Content-Type: text/plain\n\n";
+$text = $ans->{'SubmText'};
+if ($^O =~ /MSWin32/)
+{
+	## fixing line endings
+	$text =~ s/\r\n/\n/g;
+}
+print $text;

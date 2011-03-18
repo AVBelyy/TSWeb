@@ -1,0 +1,215 @@
+#!c:/soft/perl/bin/perl.exe
+$bigsubm = 1;
+require ReadArgs;
+require TswConf;
+require TswUtil;
+require TswAuth;
+require TswHtml;
+require TswNetwork;
+
+login_error() if $CookieState <= 0;
+
+$MSG = openChannel ('MSG', 1);
+
+#sendChannel ($MSG, $reqm = {
+#	      Team => $team, Password => $password, 
+#	      ContestId => $contestid,
+#	      AllMessages => 'Yes', DisableUnrequested => '1' }) if $MSG;
+#
+#&selectAllChannels ($Timeout);
+#
+#recvChannel ($MSG) if $MSG;
+#while ($MSG && ($ans = readChannel ($MSG))) {
+#    $Err = $ans->{'Error'};
+#    testsys_error ($Err) if $Err;
+#    $wtc = $ans->{'WaitingCount'} if $ans->{'ID'} eq $reqm->{'ID'};
+#}
+
+sendChannel ($MSG, $req = {
+	      Team => $team, Password => $password, 
+	      ContestId => $contestid,
+	      DisableUnrequested => '1',
+	      Command => 'AllClars'});
+
+
+$got = 0;
+$ans = doreadChannel ($MSG);
+do {
+    if ($ans->{'ID'} eq $req->{'ID'}) {
+	$Err = $ans->{'Error'};
+	testsys_error ($Err) if $Err;
+	$got = 1;
+    } 
+} while (!$got && ($ans = readChannel ($MSG)));
+
+
+error ("ID mismatch") unless $got;
+
+
+#-----
+error ("Protocol error") if $ans->{'Clars'} eq '';
+
+
+
+for (my $i = 0; $i < $ans->{'Clars'}; $i++) {
+  push @Clars, [$ans->{'ClarFrom_'.$i}, $ans->{'ClarProb_'.$i},
+                $ans->{'ClarQ_'.$i}, $ans->{'ClarA_'.$i},
+                $ans->{'ClarAnswd_'.$i}, $ans->{'ClarBCast_'.$i}];
+};
+
+
+$SUBM = openChannel ('SUBMIT', 1);
+
+sendChannel ($SUBM, $req = {
+	      Team => $team, Password => $password, 
+	      ContestId => $contestid,
+	      Request => 'ContestData' });
+
+$got = 0;
+$ans = doreadChannel ($SUBM);
+do {
+    if ($ans->{'ID'} eq $req->{'ID'}) {
+	$Err = $ans->{'Error'};
+	testsys_error ($Err) if $Err;
+	$got = 1;
+    } 
+} while (!$got && ($ans = readChannel ($SUBM)));
+
+error ("ID mismatch") unless $got;
+
+closeChannel ($SUBM);
+
+$prob{'*'} = 'Generic';
+
+$pmode = 0;
+for (split (/\r?\n/, &dos2win ($ans->{'Data'}))) {
+    if (/VERSION=(.*)/) { $ver = $1; }
+    elsif ($_ eq '') { $pmode = 2; }
+    elsif ($_ eq 'COMPILERS:') { $pmode = 1; }
+    elsif (!$pmode) { $cname = $_ }
+    elsif ($pmode == 1 && /^\.([a-z]+):(.*)/) {
+	$exts{$1} = $2;
+	push @Compilers, [ $1, $2 ]
+    } elsif ($pmode == 2 && /^([A-Za-z0-9_\-]+)=(.*)/) {
+	$prob{$1} = $2;
+    } else { error ("Unknown line $_ in ContestData response"); }
+}
+
+error ("No problems defined") unless %prob;
+
+
+($prob, $text) = @FORM{'prob', 'clar'};
+
+sub output_form {
+    output_html_header ('Testsys Clarification Request', 'subm');
+    output_html_title ('Clarification Request');
+#    print "Note: clarifcation requests will be supported after testsys upgrade, which is planned Wed Sep 10, 03:10 pm";
+    print "\n<H2 CLASS=errm>".&b_encode($error)."</H2>\n" if $error;
+    print <<PART1;
+<FORM ACTION=$loccgiroot/clars ENCTYPE=multipart/form-data METHOD=$POSTMETHOD CLASS=frm>
+<TABLE BORDER=1 ALIGN=center CELLPADDING=2 CELLSPACING=3>
+<TR><TD>From</TD><TD>Problem</TD><TD>Question</TD><TD>Answer</TD><TD>Answered</TD><TD>Broadcast</TD></TR>
+PART1
+#    for my $c (@Clars) {
+#      my ($f, $p, $q, $a, $ans, $bc) = @$c;
+#      print "$f $p $q $a $ans $bc <test>";
+#    };
+#    for (my $i = 0; $i < $ans->{'Clars'}; $i++) {
+#      print "$ans->{'ClarFrom_'.$i} 'ClarFrom_$i'";
+#    };
+    for my $c (@Clars) {
+      my ($f, $p, $q, $a, $ans, $bc) = @$c;
+#      $f = win2koi ($f);
+#      $p = win2koi ($p);
+#      $q = win2koi ($q);
+#      $a = win2koi ($a);
+      if ($ans eq '1') {$ans = 'Yes';} else {$ans = 'No';}
+      if ($bc eq '1') {$bc = 'Yes';} else {$bc = 'No';}
+      $f = "&nbsp;" if $f eq '';
+      $p = "&nbsp;" if $p eq '';
+      $q = "&nbsp;" if $q eq '';
+      $a = "&nbsp;" if $a eq '';
+      print "<TR><TD>$f</TD><TD>$p</TD><TD>$q</TD><TD>$a</TD><TD>$ans</TD><TD>$bc</TD></TR>";
+    };
+    print "</TABLE>";
+
+    print <<PARTX;
+<FORM ACTION=$loccgiroot/submit ENCTYPE=multipart/form-data METHOD=$POSTMETHOD CLASS=frm>
+<TABLE ALIGN=center CELLPADDING=2 CELLSPACING=3>
+<TR CLASS=od><TD>Problem:<BR><I>Choose here the problem id...</I></TD>
+ <TD><SELECT NAME=prob>
+PARTX
+    for my $id (sort keys %prob) {
+	my $nam = $prob{$id};
+	$nam = $nam eq '' ? $id : "$id: $nam";
+	my $sel = $id eq $prob ? ' SELECTED' : '';
+	print "<OPTION VALUE=$id$sel>$nam</OPTION>\n";
+    }
+    print <<PARTY;
+</SELECT></TD></TR>
+<TR CLASS=ev><TD>Clarification text:</TD>
+ <TD><TEXTAREA NAME=clar COLS=20 ROWS=4 WRAP=VIRTUAL>$texta</TEXTAREA></TD></TR>
+<TR><TD></TD><TD><BR>
+ <INPUT CLASS=submb TYPE=SUBMIT VALUE="Submit Clarification Request"></TD></TR>
+<TR><TD COLSPAN=2><A HREF=$loccgiroot/index>Back to main page</A></TD></TR>
+ </TABLE>
+</FORM></BODY></HTML>
+PARTY
+};
+
+
+
+sub f_error {
+    $error = shift unless $error;
+    output_form();
+    exit;
+}
+
+if ($reqmethod ne 'POST') {
+    output_form();
+    exit;
+}
+
+f_error ($error) if $error ne '';
+f_error ('Text must be non-empty') unless ($text ne '');
+
+
+$SendTimeout = 4;
+
+sendChannel ($MSG, $req = { 
+    'Team' => $team, 'Password' => $password, 
+    'ContestId' => $contestid,
+    'Problem' => $prob, 'Command' => 'Clar',
+    'Clar' => win2dos ($text) } );
+
+&selectWriteChannels ($to, $MSG);
+&selectChannels ($Timeout, $MSG);
+recvChannel ($MSG);
+while ($answ = readChannel ($MSG)) {
+    if ($req->{'ID'} eq $answ->{'ID'}) {
+	$err = $answ->{'Error'};
+	if ($err) {
+	    $err = b_encode ($err);
+	    output_html_title ('Clarification Request Error');
+	    print "Testsys Response: <SPAN CLASS=errm>$err</SPAN><BR />";
+	} else {
+	    output_html_title ('Clarification Request Status');
+	    print "Your clarification request has been acknowledged! Good luck!<BR />";
+	}
+	$outp = 1;
+	last;
+    }
+}
+if (!$outp) {
+    output_html_title ('Clarification Request Status');
+    print "Your clarification request has been submitted. However, no response has been received from Testsys.<BR />\n";
+}
+    
+closeChannel ($MSG);
+
+print <<END;
+<HR />
+<A HREF=clars>Submit another clarification request</A>&nbsp;&nbsp;<A HREF=index.html>Main page</A>
+END
+
+output_html_end();
