@@ -2,8 +2,7 @@
 import testsys
 from flask import Flask, render_template, request, session, redirect, url_for
 
-tswebapp = Flask(__name__)
-#tswebapp.secret_key = 'asdfgh'
+tswebapp = Flask('tsweb')
 tswebapp.secret_key = '123asd'
 
 @tswebapp.route('/', methods=['GET', 'POST'])
