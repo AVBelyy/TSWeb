@@ -1,0 +1,34 @@
+<html>
+    {% if not title %}{% set title = "TestSys on the Web" %}{% endif %}
+    {% include "header.html" %}
+    <body>
+    You are currently logged in as <b>{{ session.team }}</b>.&nbsp;&nbsp; <a href="index?op=logout">Log Out</a><br />
+    <hr />
+    {% include "menu.html" %}
+    <br /><hr />
+    {% if error %}
+        <span class="err">{{ error }}</span>
+    {% else %}
+        {% if messages %}
+        <b>Old messages:
+        {% else %}
+        <b>No old messages
+        {% endif %}
+        {% if wtc %}<span class="wtp"><a href="getnewmsg">{{wtc}} new messages</a> pending.</span>{% endif %}</b>
+        {% for message in messages %}
+            {{ message }}<br />
+        {% endfor %}
+        <br /><hr />
+        Some useful information:<br />
+        TestSys version: {{ version }}<br />
+        Assigned contest: {{ contid }} {{ contname}}<br />
+        Contest starts at {{ contest_start }} and lasts {{ contest_duration }} minutes, current TestSys time is {{ server_now }}</br>
+        You are {{ session.team }}<br />
+        <br /><hr />
+        {% include "menu.html" %}
+    {% endif %}
+    </body>
+</html>
+
+<!-- vim: ft=htmldjango
+--!>

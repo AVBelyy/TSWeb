@@ -3,17 +3,18 @@
 {% include "header.html" %}
 <body class="main">
     <h1>Testsys/Web Login</h1>
+    {% if error %}<span class="err">{{ error }}</span>{% endif %}<br />
     You are currently not logged in.<br />
     <form action="index" method="POST" class="frm">
     <table>
     <tr>
-        <td>Team: <input name="team" size="8"> Password: </td>
-        <td><input name="password" type="PASSWORD" size="16">
+        <td>Team: <input name="team" size="8" {% if request.form.team %}value="{{request.form.team}}"{% endif %} > Password: </td>
+        <td><input name="password" type="password" size="16">
         <input name="op" type="submit" class="submb" value="login"></td>
     </tr>
     <tr>
         <td>Contest ID (optional):</td>
-        <td><input name="contestid" size="16"></td>
+        <td><input name="contestid" size="16" {% if request.form.contestid %}value="{{request.form.contestid}}{% endif %}"></td>
     </tr>
     </table>
     </form>

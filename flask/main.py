@@ -10,7 +10,15 @@ tswebapp.secret_key = '123asd'
 @tswebapp.route('/index', methods=['GET', 'POST'])
 def index():
     if request.method == 'GET':
-        return render_template("index.html")
+        if request.args.get('op', '') == 'logout':
+            tm = ', {0}'.format(session['team']) if session.get('cookie_state', 0) > 0 else ''
+            session.pop('cookie_state', None)
+            return render_template("redirect.html", text="Thanks for logging out{0}!".format(tm))
+        elif session.get('cookie_state', 0) <= 0:
+            return render_template("index.html",
+                    error="Your session data is missing, expired or invalid." if session.get('cookie_state', 0) < 0 else '')
+
+        return format_main_page()
     else:
         if request.form['op'] == 'changecontest':
             session['contestid'] = request.form['newcontestid']
@@ -22,12 +30,14 @@ def index():
             if not request.form['password']:
                 return render_template("error.html", text="Non-empty password expected")
             session['cookie_state'] = 2
-            return render_template("redirect.html", team=request.form['team'])
-        elif request.form['op'] == 'logout':
-            tm = ', {0}'.format(request.form['team']) if session['cookie_state'] > 0 else ''
-            return render_template("redirect.html", "Thanks for loggin out{0}".format(tm))
+            session['team'] = request.form['team']
+            return render_template("redirect.html", text="Thank you for logging in, {0}!".format(request.form['team']))
         elif session['cookie_state'] <= 0:
-           pass 
+            return render_template("index.html", error="Your session data is missing, expired or invalid.")
+
+def format_main_page():
+    return render_template("main.html")
+
 if __name__ == "__main__":
     tswebapp.debug = True
     tswebapp.run()

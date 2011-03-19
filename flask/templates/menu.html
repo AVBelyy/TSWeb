@@ -1,0 +1,11 @@
+<a href="submit">Submit</a>&nbsp;&nbsp;
+<a href="monitor">Monitor</a>&nbsp;&nbsp;
+<a href="clars">Clarifications</a>&nbsp;&nbsp;
+<a href="allsubmits">Submissions</a>
+{% if statesments %}<a href="{{statements}}">Statements</a>{% endif %}
+{% if printsol %}<a href="printsol">Print solution</a>{% endif %}
+{% if conlist_mask %}<a href="contests?mask={{conlist_mask}}">List of all contests</a>{% endif %}
+{% if jury %}<a href="allsubmits?all=1">All submissions</a>{% endif %}
+
+<!-- vim: ft=htmldjango
+--!>
