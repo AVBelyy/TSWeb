@@ -5,7 +5,7 @@
     <h1>Testsys/Web Login</h1>
     {% if error %}<span class="err">{{ error }}</span>{% endif %}<br />
     You are currently not logged in.<br />
-    <form action="index" method="POST" class="frm">
+    <form action="login" method="post" class="frm">
     <table>
     <tr>
         <td>Team: <input name="team" size="8" {% if request.form.team %}value="{{request.form.team}}"{% endif %} > Password: </td>
@@ -18,7 +18,7 @@
     </tr>
     </table>
     </form>
-    <a href="index?op=logout">Remove all cookies</a>
+    <a href="/logout">Remove all cookies</a>
 </body>
 </html>
 
