@@ -15,6 +15,7 @@
         <b>No old messages
         {% endif %}
         {% if wtc %}<span class="wtp"><a href="getnewmsg">{{wtc}} new messages</a> pending.</span>{% endif %}</b>
+        {% if messages %}<br />{% endif %}
         {% for message in messages %}
             {{ message }}<br />
         {% endfor %}
@@ -23,7 +24,7 @@
         TestSys version: {{ version }}<br />
         Assigned contest: {{ contid }} {{ contname}}<br />
         Contest starts at {{ contest_start }} and lasts {{ contest_duration }} minutes, current TestSys time is {{ server_now }}</br>
-        You are {{ session.team }}<br />
+        You are {{ session.team_name }}<br />
         <br /><hr />
         {% include "menu.html" %}
     {% endif %}

@@ -29,10 +29,9 @@ Now you have access to it via http://127.0.0.1:5000/
 Already implemented features
 ----------------------------
 * Logging users in and out and storing their sessions server-side
-* Partial implementation of TestSys protocol
+* TestSys protocol implementation working at least with main page
 
 Future plans
 ------------
-* Complete implementation of protocol
 * Implementaion of monitor, sumbit and other modules
 * Final restruction of code and getting rid of perl-style page processing
