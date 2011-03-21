@@ -12,6 +12,15 @@ def redirector(url, **kwargs):
 
     return res
 
+def login_error():
+    return render_template("error.html", text="Login error: session data missing or expired", title="Authentification Error")
+
+def error(msg):
+    return render_template("error.html", text=msg)
+
+def testsys_error(msg):
+    return render_template("error.html", text="TestSys reports following error: {0}".format(msg) if msg else "TestSys reports unknown error", title="TestSys error")
+
 @tswebapp.route('/')
 @tswebapp.route('/index')
 def index():
@@ -98,6 +107,58 @@ def format_main_page():
         session['team_name'] = ans.get('TeamName', session['team']).decode('cp866')
 
     return render_template("main.html", **config)
+
+@tswebapp.route('/submit', methods=['GET', 'POST'])
+def sumbit():
+    if not 'team' in session:
+        return login_error()
+
+    SUBM = testsys.get_channel('SUBMIT')
+    SUBM.open(1)
+
+    SUBM.send({
+        'Team': session['team'],
+        'Password': session['password'],
+        'ContestId': session['contestid'],
+        'Request': 'ContestData'})
+
+    ans = SUBM.recv()
+    if 'Error' in ans:
+        return testsys_error(ans['Error'])
+
+    pmode = 0
+    compilers, problems, extensions = [], {}, {}
+    data = ans['Data'].decode('cp866')
+    for line in re.split('\r?\n', data):
+        match = re.match('VERSION=(.*)', line)
+        if match:
+            ver = match.group(1)
+        elif line == '':
+            pmode = 2
+        elif line == 'COMPILERS:':
+            pmode = 1
+        elif not pmode:
+            contest_name = line
+        elif pmode == 1 and re.match(r'^\.([a-z]+):(.*)', line):
+            match = re.match(r'^\.([a-z]+):(.*)', line)
+            extensions[match.group(1)] = match.group(2)
+            compilers.append([match.group(1), match.group(2)])
+        elif pmode == 2 and re.match(r'^([A-Za-z0-9_\-]+)=(.*)', line):
+            match = re.match(r'^([A-Za-z0-9_\-]+)=(.*)', line)
+            problems[match.group(1)] = match.group(2)
+        else:
+            return error("Unknown line '{0}' in ContestData response".format(line))
+
+    if not problems:
+        return error("No problems defined")
+    if not compilers:
+        return error("No compilers defined")
+
+    if request.method == 'GET':
+        config = {}
+        config['problems'] = problems
+        config['compilers'] = compilers
+        return render_template("submit.html", **config)
 
 if __name__ == "__main__":
     tswebapp.debug = True
