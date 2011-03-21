@@ -14,6 +14,9 @@ _channels = {}
 encode_regex = re.compile(r'([\x00-\x1f])')
 decode_regex = re.compile(r'\x18([\x40-\x5f])')
 
+class CommunicationException(Exception):
+    pass
+
 class ConnectionFailedException(Exception):
     pass
 
@@ -106,22 +109,28 @@ class Channel():
             except socket.error as e:
                 logging.error("Error while closing socket, {0} {1}".format(*e))
 
-    def send(self, msg):
+    def send(self, msg, timeout=SEND_TIMEOUT):
         req = makereq(msg)
         logging.debug("Socket: {0.sock}, port={0.port}".format(self))
         logging.debug("Request: {0}".format(req))
 
         tot = 0
         while req:
-            res = self.sock.send(req, 0)
+            try:
+                res = self.sock.send(req, 0)
+            except IOError as e:
+                logging.error("Error sending data to socket, {0}, {1}".format(errno.errorcode[e.errno], e.strerror))
+                raise CommunicationException("Error on socket, may be TestSys is down?")
             tot = res if res < 0 else tot + res
-            sockets = select_channels(SEND_TIMEOUT, True, self)
+            sockets = select_channels(timeout, True, self)
             if (not sockets) or (res <= 0 or res == len(req)):
                 break
             req = req[res:]
 
         if tot < 0:
             raise Exception("send() returned {0}".format(tot))
+
+        return msg['ID']
 
     def _recv(self):
         try:
