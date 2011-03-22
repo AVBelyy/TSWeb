@@ -1,13 +1,7 @@
 
-import socket, fcntl, logging, re, random, select, errno
+import socket, logging, re, random, select, errno
 from flask import request
-
-#FIXME: Use config engine
-LOG_FILENAME = 'tsweb.log'
-LOG_LEVEL = logging.DEBUG
-TESTSYS_HOST = '127.0.0.1'
-SEND_TIMEOUT = 10.0
-TIMEOUT = 10.0
+from main import tswebapp
 
 _channels = {}
 
@@ -55,12 +49,10 @@ def makereq(p):
 
 def select_channels(timeout, write=False, *args):
     sockets = [chan.sock for chan in args if chan.sock]
-    logging.debug("Selecting sockets for {0}: {1}".format("reading" if not write else "writing", sockets))
+    tswebapp.logger.debug("Selecting sockets for {0}: {1}".format("reading" if not write else "writing", sockets))
     r, w, e = select.select([] if write else sockets, sockets if write else [], sockets, timeout)
     return w if write else r
     #TODO: Some kind of error handling here
-
-logging.basicConfig(filename=LOG_FILENAME, level=LOG_LEVEL)
 
 def get_channel(name):
     if name in _channels and _channels[name].sock:
@@ -83,7 +75,6 @@ class Channel():
         self.queue = []
         self.type = 'Channel'
         self.partial = None
-        self.debug = False #FIXME: Use config engine
         self.noblock = True
         self.flags = None
 
@@ -91,12 +82,12 @@ class Channel():
 
     def open(self, nb):
         if not self.sock:
-            logging.debug('Connecting to {0}:{1}'.format(TESTSYS_HOST, self.port))
+            tswebapp.logger.debug('Connecting to {0}:{1}'.format(tswebapp.config['TESTSYS_HOST'], self.port))
             self.sock = socket.socket()
             try:
-                self.sock.connect((TESTSYS_HOST, self.port))
+                self.sock.connect((tswebapp.config['TESTSYS_HOST'], self.port))
             except socket.error as e:
-                logging.error("Connection failed, {0} {1}".format(*e))
+                tswebapp.logger.error("Connection failed, {0} {1}".format(*e))
                 raise ConnectionFailedException()
             self.sock.setblocking(not nb)
 
@@ -107,19 +98,19 @@ class Channel():
                 self.sock.close()
                 self.sock = None
             except socket.error as e:
-                logging.error("Error while closing socket, {0} {1}".format(*e))
+                tswebapp.logger.error("Error while closing socket, {0} {1}".format(*e))
 
-    def send(self, msg, timeout=SEND_TIMEOUT):
+    def send(self, msg, timeout=tswebapp.config['SEND_TIMEOUT']):
         req = makereq(msg)
-        logging.debug("Socket: {0.sock}, port={0.port}".format(self))
-        logging.debug("Request: {0}".format(req))
+        tswebapp.logger.debug("Socket: {0.sock}, port={0.port}".format(self))
+        tswebapp.logger.debug("Request: {0}".format(req))
 
         tot = 0
         while req:
             try:
                 res = self.sock.send(req, 0)
             except IOError as e:
-                logging.error("Error sending data to socket, {0}, {1}".format(errno.errorcode[e.errno], e.strerror))
+                tswebapp.logger.error("Error sending data to socket, {0}, {1}".format(errno.errorcode[e.errno], e.strerror))
                 raise CommunicationException("Error on socket, may be TestSys is down?")
             tot = res if res < 0 else tot + res
             sockets = select_channels(timeout, True, self)
@@ -137,13 +128,13 @@ class Channel():
             buff = self.sock.recv(655360)
         except IOError as e:
             if e.errno == errno.EAGAIN:
-                logging.debug("Non-blocking operation on not ready socket")
+                tswebapp.logger.debug("Non-blocking operation on not ready socket")
                 return
             else:
                 raise e
 
-        logging.debug("(read {0} bytes)".format(len(buff)))
-        logging.info("(BUFF: |{0}|)".format(buff))
+        tswebapp.logger.debug("(read {0} bytes)".format(len(buff)))
+        tswebapp.logger.info("(BUFF: |{0}|)".format(buff))
 
         if self.partial:
             buff = self.partial + buf
@@ -153,7 +144,7 @@ class Channel():
         E = []
         on = 0
         for e in L:
-            logging.debug("Got: {0}".format(e))
+            tswebapp.logger.debug("Got: {0}".format(e))
             if on:
                 E.append(e)
             if e == '---':
@@ -184,15 +175,15 @@ class Channel():
     def recv(self, f=False):
         R = self._read()
         while not R:
-            sockets = select_channels(TIMEOUT, False, self)
+            sockets = select_channels(tswebapp.config['TIMEOUT'], False, self)
             if not sockets:
-                logging.debug('Timeout reached while receiveing from {0.sock} port {0.port}'.format(self))
+                tswebapp.logger.debug('Timeout reached while receiveing from {0.sock} port {0.port}'.format(self))
                 break
 
             self._recv()
 
             if self.partial:
-                logging.debug("Partially recieved {0} bytes".format(len(self.partial)))
+                tswebapp.logger.debug("Partially recieved {0} bytes".format(len(self.partial)))
 
             if f and self.partial == '':
                 break

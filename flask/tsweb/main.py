@@ -1,11 +1,15 @@
 
-import re
+import re, logging, logging.handlers
 import testsys
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug import secure_filename
 
 tswebapp = Flask(__name__)
 tswebapp.secret_key = '123asd'
+tswebapp.config.from_object('config')
+tswebapp.logger.setLevel(tswebapp.config['LOG_LEVEL'])
+tswebapp.logger.addHandler(logging.handlers.RotatingFileHandler(
+              tswebapp.config['LOG_FILENAME'], maxBytes=2**20, backupCount=5))
 
 def redirector(url, **kwargs):
     res = redirect(url)
@@ -100,7 +104,7 @@ def format_main_page():
         config['wtc'] = int(ans.get('WaitingCount', 0))
         config['jury'] = True if ans.get('JuryMode', False) else False
         config['statements'] = ans.get('StatementsLink', '')
-        config['contlist_mask'] = 1 #FIXME: Get this from config file
+        config['contlist_mask'] = tswebapp.config['CONTLIST_MASK']
         config['messages'] = re.split('\r?\n', ans.get('AllMessages', ''))
         config['version'] = ans.get('Version', 0)
         config['contid'] = ans.get('ContestId', '')
@@ -194,10 +198,11 @@ def sumbit():
             if not request.form['lang'] in extensions:
                 return error("Unknown compiler '{0}'".format(request.form['lang']))
 
-            #FIXME: Add timeout from config
             timeout = len(data) / 16384
             if timeout > 4:
                 timeout = 4
+
+            timeout = (timeout+2)*tswebapp.config['TIMEOUT']
 
             id = SUBM.send({
                 'Team': session['team'],
@@ -247,5 +252,4 @@ def monitor():
     return '<br />'.join(ans['History'].decode('cp1251').split('\n'))+'<pre>'+ans['Monitor'].decode('cp866')+'</pre>'
 
 if __name__ == "__main__":
-    tswebapp.debug = True
     tswebapp.run()

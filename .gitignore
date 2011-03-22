@@ -1,3 +1,5 @@
 statements/*
 *.swp
 *.pyc
+tsweb.log*
+config.cfg
