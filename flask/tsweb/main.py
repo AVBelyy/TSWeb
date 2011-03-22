@@ -1,12 +1,12 @@
 
 import re, logging, logging.handlers
-import testsys
+import testsys, config
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug import secure_filename
 
 tswebapp = Flask(__name__)
 tswebapp.secret_key = '123asd'
-tswebapp.config.from_object('config')
+tswebapp.config.from_object(config)
 tswebapp.logger.setLevel(tswebapp.config['LOG_LEVEL'])
 tswebapp.logger.addHandler(logging.handlers.RotatingFileHandler(
               tswebapp.config['LOG_FILENAME'], maxBytes=2**20, backupCount=5))
