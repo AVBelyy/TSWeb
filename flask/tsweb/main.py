@@ -222,6 +222,30 @@ def sumbit():
     finally:
         SUBM.close()
 
+@tswebapp.route('/monitor')
+def monitor():
+    if not 'team' in session:
+        return login_error()
+
+    MON = testsys.get_channel('MONITOR')
+    try:
+        MON.open(1)
+    except testsys.ConnectionFailedException:
+        return error("Cannot connect to testsys")
+
+    try:
+        id = MON.send({
+            'Team': session['team'],
+            'Password': session['password'],
+            'ContestId': session['contestid']})
+        ans = MON.recv()
+    except testsys.CommunicationException as e:
+        return error(e.message)
+    finally:
+        MON.close()
+
+    return '<br />'.join(ans['History'].decode('cp1251').split('\n'))+'<pre>'+ans['Monitor'].decode('cp866')+'</pre>'
+
 if __name__ == "__main__":
     tswebapp.debug = True
     tswebapp.run()

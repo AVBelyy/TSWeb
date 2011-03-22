@@ -128,7 +128,7 @@ class Channel():
             req = req[res:]
 
         if tot < 0:
-            raise Exception("send() returned {0}".format(tot))
+            raise CommunicationException("send() returned {0}".format(tot))
 
         return msg['ID']
 
