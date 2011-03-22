@@ -1,11 +1,11 @@
-<a href="submit">Submit</a>&nbsp;&nbsp;
-<a href="monitor">Monitor</a>&nbsp;&nbsp;
-<a href="clars">Clarifications</a>&nbsp;&nbsp;
-<a href="allsubmits">Submissions</a>
+<a href="{{ request.script_root }}/submit">Submit</a>&nbsp;&nbsp;
+<a href="{{ request.script_root }}/monitor">Monitor</a>&nbsp;&nbsp;
+<a href="{{ request.script_root }}/clars">Clarifications</a>&nbsp;&nbsp;
+<a href="{{ request.script_root }}/allsubmits">Submissions</a>
 {% if statesments %}&nbsp;&nbsp;<a href="{{statements}}">Statements</a>{% endif %}
-{% if printsol %}&nbsp;&nbsp;<a href="printsol">Print solution</a>{% endif %}
-{% if conlist_mask %}&nbsp;&nbsp;<a href="contests?mask={{conlist_mask}}">List of all contests</a>{% endif %}
-{% if jury %}&nbsp;&nbsp;<a href="allsubmits?all=1">All submissions</a>{% endif %}
+{% if printsol %}&nbsp;&nbsp;<a href="{{ request.script_root }}/printsol">Print solution</a>{% endif %}
+{% if conlist_mask %}&nbsp;&nbsp;<a href="{{ request.script_root }}/contests?mask={{conlist_mask}}">List of all contests</a>{% endif %}
+{% if jury %}&nbsp;&nbsp;<a href="{{ request.script_root }}/allsubmits?all=1">All submissions</a>{% endif %}
 
 <!-- vim: ft=htmldjango
 --!>

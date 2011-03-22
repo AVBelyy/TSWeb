@@ -2,7 +2,7 @@
     {% set title = "Testsys submit" %}
     {% include "header.html" %}
     <body>
-    <form action="submit" enctype="multipart/form-data" method="post" class="frm"> 
+    <form action="{{ request.script_root }}/submit" enctype="multipart/form-data" method="post" class="frm"> 
     <table align="center" cellpadding="2" cellspacing="3">
         <tr class="od">
             <td>Problem:<br/><i>Choose here the problem id</i></td>
@@ -48,3 +48,6 @@
     </table>
     </body>
 </html>
+
+<!-- vim: ft=htmldjango
+--!>

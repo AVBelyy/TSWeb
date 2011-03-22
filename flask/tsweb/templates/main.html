@@ -2,7 +2,7 @@
     {% if not title %}{% set title = "TestSys on the Web" %}{% endif %}
     {% include "header.html" %}
     <body>
-    You are currently logged in as <b>{{ session.team }}</b>.&nbsp;&nbsp; <a href="/logout">Log Out</a><br />
+    You are currently logged in as <b>{{ session.team }}</b>.&nbsp;&nbsp; <a href="{{ request.script_root }}/logout">Log Out</a><br />
     <hr />
     {% include "menu.html" %}
     <br /><hr />
@@ -14,7 +14,7 @@
         {% else %}
         <b>No old messages
         {% endif %}
-        {% if wtc %}<span class="wtp"><a href="getnewmsg">{{wtc}} new messages</a> pending.</span>{% endif %}</b>
+        {% if wtc %}<span class="wtp"><a href="{{ request.script_root }}/getnewmsg">{{wtc}} new messages</a> pending.</span>{% endif %}</b>
         {% if messages %}<br />{% endif %}
         {% for message in messages %}
             {{ message }}<br />
