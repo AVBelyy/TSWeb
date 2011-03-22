@@ -4,7 +4,7 @@ import testsys
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug import secure_filename
 
-tswebapp = Flask('tsweb')
+tswebapp = Flask(__name__)
 tswebapp.secret_key = '123asd'
 
 def redirector(url, **kwargs):
