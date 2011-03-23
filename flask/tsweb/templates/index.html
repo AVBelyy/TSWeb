@@ -5,7 +5,7 @@
     <h1>Testsys/Web Login</h1>
     {% if error %}<span class="err">{{ error }}</span>{% endif %}<br />
     You are currently not logged in.<br />
-    <form action="login" method="post" class="frm">
+    <form action="{{ request.script_root }}/login" method="post" class="frm">
     <table>
     <tr>
         <td>Team: <input name="team" size="8" {% if request.form.team %}value="{{request.form.team}}"{% endif %} > Password: </td>
