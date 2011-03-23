@@ -84,8 +84,12 @@ class Channel():
         if not self.sock:
             main.tswebapp.logger.debug('Connecting to {0}:{1}'.format(main.tswebapp.config['TESTSYS_HOST'], self.port))
             self.sock = socket.socket()
+            self.sock.settimeout(main.tswebapp.config['TIMEOUT'])
             try:
                 self.sock.connect((main.tswebapp.config['TESTSYS_HOST'], self.port))
+            except socket.timeout:
+                main.tswebapp.logger.error("Connection failed: time-out")
+                raise ConnectionFailedException()
             except socket.error as e:
                 main.tswebapp.logger.error("Connection failed, {0} {1}".format(*e))
                 raise ConnectionFailedException()
