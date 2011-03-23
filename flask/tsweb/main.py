@@ -1,6 +1,6 @@
 
 import re, logging, logging.handlers
-import testsys, config
+import testsys, config, monitor
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug import secure_filename
 
@@ -228,7 +228,7 @@ def sumbit():
         SUBM.close()
 
 @tswebapp.route('/monitor')
-def monitor():
+def monitor_page():
     if not 'team' in session:
         return login_error()
 
@@ -249,7 +249,8 @@ def monitor():
     finally:
         MON.close()
 
-    return '<br />'.join(ans['History'].decode('cp1251').split('\n'))+'<pre>'+ans['Monitor'].decode('cp866')+'</pre>'
+    config = monitor.gen_monitor(ans['History'], ans['Monitor'])
+    return render_template("monitor.html", **config)
 
 if __name__ == "__main__":
     tswebapp.run()

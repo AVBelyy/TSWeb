@@ -1,0 +1,28 @@
+<html>
+    {% set title = "Contest Monitor" %}
+    {% set extcss = "monitor.css" %}
+    {% include "header.html" %}
+    <body class="monit">
+    {% if error %}
+    <span class="errm">{{ error }}
+    {% else %}
+        {% if pre %}
+        <pre>
+        {{ pre }}
+        </pre>
+        {% else %}
+        <h1>{{ contest }}</h1>
+        Started at: <b>{{ startat }}</b><br />
+        Duration: <b>{{ '%d:%02d' % (contlen/60, contlen%60) }}</b><br />
+        State: <b>{{ state }} {{ '%.0f' % (now/60) }}/{{ contlen }}</b><br />
+        Last success: {{ last_success.time }}, team <b>{{ last_success.team }}</b> &mdash; <b>{{ last_success.team_name }}</b> problem <b>{{ last_success.problem }}</b><br />
+        {% for command in commands %}
+        @{{ command[0] }} {% for arg in command[1] %}{{ arg }} {% endfor %}<br />
+        {% endfor %}
+        {% endif %}
+    {% endif %}
+    </body>
+</html>
+
+<!-- vim:ft=htmldjango
+--!>

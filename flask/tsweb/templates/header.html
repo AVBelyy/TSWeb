@@ -1,6 +1,9 @@
 <head>
     <title>{{ title }}</title>
     <link href="{{ request.script_root }}/static/tsweb.css" rel="stylesheet" type="text/css">
+    {% if extcss %}
+    <link href="{{ request.script_root }}/static/{{ extcss }}" rel="stylesheet" type="text/css">
+    {% endif %}
 </head>
 <!-- vim: ft=htmldjango
 !-->
