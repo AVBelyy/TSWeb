@@ -143,7 +143,7 @@ class Channel():
         main.tswebapp.logger.info("(BUFF: |{0}|)".format(buff))
 
         if self.partial:
-            buff = self.partial + buf
+            buff = self.partial + buff
             self.partial = None
 
         L = buff.split('\0')

@@ -249,8 +249,11 @@ def monitor_page():
     finally:
         MON.close()
 
-    config = monitor.gen_monitor(ans['History'], ans['Monitor'])
-    return render_template("monitor.html", **config)
+    if 'Error' in ans:
+        return error(ans['Error'])
+    else:
+        config = monitor.gen_monitor(ans['History'], ans['Monitor'])
+        return render_template("monitor.html", **config)
 
 if __name__ == "__main__":
     tswebapp.run()
