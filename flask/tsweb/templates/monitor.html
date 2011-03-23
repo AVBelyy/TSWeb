@@ -15,7 +15,47 @@
         Started at: <b>{{ startat }}</b><br />
         Duration: <b>{{ '%d:%02d' % (contlen/60, contlen%60) }}</b><br />
         State: <b>{{ state }} {{ '%.0f' % (now/60) }}/{{ contlen }}</b><br />
-        Last success: {{ last_success.time }}, team <b>{{ last_success.team }}</b> &mdash; <b>{{ last_success.team_name }}</b> problem <b>{{ last_success.problem }}</b><br />
+        Last success: {{ last_success.htime }}, team <b>{{ last_success.team }}</b> &mdash; <b>{{ last_success.team_name }}</b>, problem <b>{{ last_success.problem }}</b><br />
+        Last submission: {{ last_submission.htime }}, team <b>{{ last_submission.team }}</b> &mdash; <b>{{ last_submission.team_name }}</b>, problem <b>{{ last_submission.problem }}</b><br />
+        <table border="1" cellpadding="4" class="mtab">
+        <tr class="head">
+            <th>ID</th>
+            <th>Team</th>
+            {%- for problem in problem_list %}
+            <th width="35">{{ problem }}</th>
+            {%- endfor %}
+            <th width="25">=</th>
+            <th>Rank</th>
+        </tr>
+        {%- for rank, list in results|groupby(4) -%}
+        {% set class = loop.cycle('even', 'odd') %}
+        {%- for team, name, result, solved, rank in list %}
+        <tr class="{{ class }}">
+            <td {% if session.team == team %}class="for"{% endif %}>{{ team }}</td>
+            <td {% if session.team == team %}class="for"{% endif %}>{{ name }}</td>
+            {% for time, attempts, succ, attempted in result -%}
+            <td {% if succ %}class="ok"{% elif attempted %}class="wa"{% else %}class="no"{% endif %}>
+                {%- if succ -%} {# success #}
+                +
+                {%- elif attempted -%} {# some failures #}
+                -
+                {%- else -%}
+                .
+                {%- endif -%}
+                {%- if succ and attempts-1 -%} {# success not on first attempt #}
+                {{- attempts -}}
+                {%- elif succ -%} {# success from first attempt #}
+                {%- elif attempted -%} {# some number of failures #}
+                {{- attempts -}}
+                {% endif %}
+                <br />{{ time -}}
+            </td>
+            {% endfor -%}
+            <td>{{ solved }}</td>
+            <td>{{ rank }}</td>
+        {%- endfor %}
+        {%- endfor %}
+        </table>
         {% for command in commands %}
         @{{ command[0] }} {% for arg in command[1] %}{{ arg }} {% endfor %}<br />
         {% endfor %}
