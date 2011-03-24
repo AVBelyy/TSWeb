@@ -255,5 +255,36 @@ def monitor_page():
         config = monitor.gen_monitor(ans['History'], ans['Monitor'])
         return render_template("monitor.html", **config)
 
+@tswebapp.route('/allsubmits')
+def submits():
+    if not 'team' in session:
+        return login_error()
+
+    MSG = testsys.get_channel('MSG')
+    try:
+        MSG.open(1)
+    except testsys.ConnectionFailedException:
+        return error("Cannot connect to testsys")
+
+    try:
+        id = MSG.send({
+            'Team': session['team'],
+            'Password': session['password'],
+            'ContestId': session['contestid'],
+            'DisableUnrequested': '1',
+            'AllSubm': request.args.get('all', 0),
+            'Command': 'AllSubmits'})
+        ans = MSG.recv()
+    except testsys.CommunicationException as e:
+        return error(e.message)
+    finally:
+        MSG.close()
+
+    res = []
+    for i in xrange(int(ans['Submits'])):
+        res.append(ans['SubmProb_'+str(i)])
+
+    return ans['Submits']+str(res)
+
 if __name__ == "__main__":
     tswebapp.run()
