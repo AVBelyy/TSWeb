@@ -27,7 +27,7 @@
             <th width="25">=</th>
             <th>Rank</th>
         </tr>
-        {%- for rank, list in results|groupby(4) -%}
+        {%- for rank, list in results|groupby(3)|reverse -%}
         {% set class = loop.cycle('even', 'odd') %}
         {%- for team, name, result, solved, rank in list %}
         <tr class="{{ class }}">
