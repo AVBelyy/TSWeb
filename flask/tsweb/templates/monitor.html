@@ -55,11 +55,41 @@
             <td class="pen">{{ score // 60 }}</td>
             <td class="rk">{{ rank }}</td>
         {%- endfor %}
+        {%- if loop.last -%}
+        {% if class == 'even' %}{% set class = 'odd' %}{% else %}{% set class = 'even' %}{% endif %}
+            <tr class="{{ class }}">
+            <td>&nbsp;</td>
+            <td class="no">Submits</td>
+            {%- for problem in problem_list|sort -%}
+            <td class="no">{% if accepts[problem]+rejects[problem] %}{{ accepts[problem]+rejects[problem] }}{% endif %}</td>
+            {%- endfor -%}
+            <td class="no">{{ total_accepts+total_rejects }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            </tr>
+            <tr class="{{ class }}">
+            <td>&nbsp;</td>
+            <td class="ok">Accepted</td>
+            {%- for problem in problem_list|sort -%}
+            <td class="ok">{% if accepts[problem] %}{{ accepts[problem] }}{% endif %}</td>
+            {%- endfor -%}
+            <td class="ok">{{ total_accepts }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            </tr>
+            <tr class="{{ class }}">
+            <td>&nbsp;</td>
+            <td class="wa">Rejected</td>
+            {%- for problem in problem_list|sort -%}
+            <td class="wa">{% if rejects[problem] %}{{ rejects[problem] }}{% endif %}</td>
+            {%- endfor -%}
+            <td class="wa">{{ total_rejects }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            </tr>
+        {% endif -%}
         {%- endfor %}
         </table>
-        {% for command in commands %}
-        @{{ command[0] }} {% for arg in command[1] %}{{ arg }} {% endfor %}<br />
-        {% endfor %}
         {% endif %}
     {% endif %}
     </body>

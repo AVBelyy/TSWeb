@@ -136,6 +136,9 @@ def gen_monitor(history, data):
                     'test': test, 'team_name': teams[team][2]})
 
         TeamsResults = {}
+        accepted_counters = dict(zip(problems.keys(), [0]*len(problems)))
+        rejected_counters =  dict(zip(problems.keys(), [0]*len(problems)))
+
         for team in teams:
             results = []
             for problem in sorted(problems):
@@ -164,6 +167,11 @@ def gen_monitor(history, data):
                     #Increase proper counters for team
                     if result[0] > 0:
                         teams[team][3] += 1 #solved counter
+                        #Set global statistic counters
+                        accepted_counters[problem] += 1
+                        rejected_counters[problem] += attempts-1
+                    else:
+                        rejected_counters[problem] += attempts
                     teams[team][4] += result[1] #scores counter
                 results.append(result)
             TeamsResults[team] = results
@@ -185,6 +193,10 @@ def gen_monitor(history, data):
         config['teams_list'] = [((i,)+tuple(teams[i])) for i in teams_order]
         config['results'] = TeamsResults
         config['problem_list'] = sorted(problems)
+        config['accepts'] = accepted_counters
+        config['rejects'] = rejected_counters
+        config['total_accepts'] = reduce(lambda x,y: x+y, [accepted_counters[i] for i in accepted_counters])
+        config['total_rejects'] = reduce(lambda x,y: x+y, [rejected_counters[i] for i in rejected_counters])
 
         config['last_success'] = filter(
             lambda x: True if x['result'] == 'OK' or x['result'] == 'OC' else False,
