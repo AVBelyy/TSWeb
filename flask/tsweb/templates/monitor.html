@@ -25,34 +25,35 @@
             <th width="35">{{ problem }}</th>
             {%- endfor %}
             <th width="25">=</th>
+            <th>Time</th>
             <th>Rank</th>
         </tr>
-        {%- for rank, list in results|groupby(3)|reverse -%}
+        {%- for rank, list in teams_list|groupby(6) -%}
         {% set class = loop.cycle('even', 'odd') %}
-        {%- for team, name, result, solved, rank in list %}
+        {%- for team, mclass, set, name, solved, score, rank in list %}
         <tr class="{{ class }}">
-            <td {% if session.team == team %}class="for"{% endif %}>{{ team }}</td>
-            <td {% if session.team == team %}class="for"{% endif %}>{{ name }}</td>
-            {% for time, attempts, succ, attempted in result -%}
-            <td {% if succ %}class="ok"{% elif attempted %}class="wa"{% else %}class="no"{% endif %}>
-                {%- if succ -%} {# success #}
+            <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ team }}</td>
+            <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ name }}</td>
+            {% for attempts, score, time, res, test in results[team] -%}
+            {%- set succ = False -%}
+            {%- set out_time = True -%}
+            <td {% if res == 'OK' %}class="ok" {%- set succ = True -%}{% elif attempts %}class="wa"{% else %}class="no"{% endif %}>
+                {%- if attempts < 0 %}
+                {{ attempts }}
+                {%- elif attempts-1 > 0 and succ -%}
+                +{{ attempts-1 }}
+                {%- elif succ -%}
                 +
-                {%- elif attempted -%} {# some failures #}
-                -
                 {%- else -%}
                 .
+                {%- set out_time = False -%}
                 {%- endif -%}
-                {%- if succ and attempts-1 -%} {# success not on first attempt #}
-                {{- attempts -}}
-                {%- elif succ -%} {# success from first attempt #}
-                {%- elif attempted -%} {# some number of failures #}
-                {{- attempts -}}
-                {% endif %}
-                <br />{{ time -}}
+                {% if out_time %}<br />{{ '%d:%02d' % (time/3600, (time/60) % 60) -}}{% endif %}
             </td>
             {% endfor -%}
-            <td>{{ solved }}</td>
-            <td>{{ rank }}</td>
+            <td class="solv">{{ solved }}</td>
+            <td class="pen">{{ score // 60 }}</td>
+            <td class="rk">{{ rank }}</td>
         {%- endfor %}
         {%- endfor %}
         </table>

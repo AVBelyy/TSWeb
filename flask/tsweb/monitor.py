@@ -12,10 +12,6 @@ line_regex = re.compile(r'\@(.+?) (.+)', re.U)
 crlf_regex = re.compile(r'\r?\n')
 date_regex = re.compile(r'\d{2}\.\d{2}\.\d{2,4}\s\d{2}:\d{2}:\d{2}')
 problem_id_regex = re.compile(r'^[A-Za-z0-9_\-]{1,16}$')
-result_t1_regex = re.compile(r'^\?(..)\?$')
-result_t2_regex = re.compile(r'^[A-Z]{2}$')
-result_t3_regex = re.compile(r'^((\d{1,3})|(\?\?)|(\-\-))$')
-
 states = ('BEFORE', 'RUNNING', 'OVER', 'FROZEN', 'RESULTS')
 
 class ParsingError(Exception):
@@ -75,13 +71,11 @@ def gen_monitor(history, data):
 
         if commands[0][0] == 'for':
             try:
-                mon_for = int(commands[0][1][0])
+                config['m_for'] = commands[0][1][0]
             except ValueError as e:
                 main.tswebapp.logger.error("Bad argument '{0}' for command '{1}'".format(commands[0][1][0].encode('utf-8'), 'for'))
                 raise ParsingError("Bad command format in monitor")
             commands.pop(0)
-        else:
-            mon_for = None
 
         problems = {}
         for i in xrange(config['problems']):
@@ -100,8 +94,6 @@ def gen_monitor(history, data):
 
             problems[id] = (name, p1, p2)
 
-        config['problem_list'] = problems
-
         teams = {}
         for i in xrange(config['teams']):
             t, team = commands.pop(0)
@@ -117,7 +109,8 @@ def gen_monitor(history, data):
             except ValueError:
                 main.tswebapp.logger.error("Invalid monclass or monset: '{0}, {1}'".format(monclass, monset))
 
-            teams[id] = (monclass, monset, name)
+            #Fields 3, 4 and 5 are prepared for future solved, score and rank counter
+            teams[id] = [monclass, monset, name, 0, 0, 0]
 
         submissions = []
         ioi = 0
@@ -133,69 +126,70 @@ def gen_monitor(history, data):
             else:
                 test = 0
 
-            match = result_t1_regex.match(result)
-            if match:
-                result = match.group(1)
-            elif result_t2_regex.match(result):
-                ths = -1
-            elif result_t3_regex.match(result):
-                ths = 1
-
-            if not ioi:
-                ioi = ths
-            if not ths:
-                main.tswebapp.logger.error("Invalid result code '{0}'".format(result))
-                raise ParsingError("Bad submission syntax")
-            if ioi != ths:
-                main.tswebapp.logger.error("Mixed acm/ioi monitor")
-                raise ParsingError("Bad monitor format")
-            if (result == 'OK' or result == 'OC') and test != 0:
-                main.tswebapp.logger.error("Test number not expected for OK/OC result")
-                raise ParsingError("Bad monitor format")
-            if ioi > 0 and test != 0 and result != '--':
-                main.tswebapp.logger.error("Test number not expected in ioi monitor")
+            if result == 'OK' and test != 0:
+                main.tswebapp.logger.error("Test number not expected for OK result")
                 raise ParsingError("Bad monitor format")
 
             submissions.append({'team': team, 'problem': problem,
                     'attempt': attempt, 'time': time, 'result': result,
                     'htime': '%d:%02d:%02d' % (time/3600, (time/60) % 60, time % 60),
                     'test': test, 'team_name': teams[team][2]})
-        subs = sorted(submissions, key=lambda x: x['time'], reverse=1)
-        results = []
-        rank = 1
-        for team in sorted(teams):
-            p_result = []
-            solved = 0
+
+        TeamsResults = {}
+        for team in teams:
+            results = []
             for problem in sorted(problems):
-                #Get all submissions of 'problem' by 'team'
-                p_t_subs = [i for i in submissions if i['team'] == team and i['problem'] == problem]
-                if not p_t_subs:
-                    p_result.append(('', 0, False, False))
-                    continue
-                #Strip all submissions after accepted one
-                l = len(p_t_subs)
-                succ = False
-                for i, sub in enumerate(p_t_subs):
-                    if sub['result'] in ('OK', 'OC', '--'):
-                        l = i+1
-                        solved += 1
-                        succ = True
-                        break
-                htime = p_t_subs[l-1]['htime']
-                attempted = htime != ''
-                p_result.append((htime, l, succ, attempted))
-            results.append([team, teams[team][2], p_result, solved, 0])
-        results.sort(key=lambda x: x[3], reverse=1)
+                #Get submissions of current problem by current team
+                subs = filter(lambda x: x['team'] == team and x['problem'] == problem, submissions)
+                #Sort them by attempts (secondary key)
+                subs.sort(key=lambda x: x['attempt'])
+                #And by time (primary key)
+                subs.sort(key=lambda x: x['time'])
+
+                if not subs:
+                    result = (0, 0, 0, '', 0)
+                else:
+                    for i, sub in enumerate(subs):
+                        if sub['result'] == 'OK':
+                            del subs[i+1:]
+                            break
+
+                    sub = subs[-1]
+                    attempts = len(subs)
+                    #Format of result: (+-attempts, score, time, result, test number)
+                    if sub['result'] == 'OK':
+                        result = (attempts, problems[problem][1] * 60 * (attempts-1) + sub['time'], sub['time'], sub['result'], 0)
+                    else:
+                        result = (-attempts, problems[problem][2] * 60 * attempts, sub['time'], sub['result'], sub['test'])
+                    #Increase proper counters for team
+                    if result[0] > 0:
+                        teams[team][3] += 1 #solved counter
+                    teams[team][4] += result[1] #scores counter
+                results.append(result)
+            TeamsResults[team] = results
+
+        #Sort teams by id (third key)
+        teams_order = sorted(teams)
+        #Then by scores (secondary key)
+        teams_order = sorted(teams_order, key=lambda x: teams[x][4])
+        #And by attempts (primary key)
+        teams_order = sorted(teams_order, key=lambda x: teams[x][3], reverse=1)
+
+        #Assign ranks to teams
         rank = 1
-        for e in results:
-            e[4] = rank
-            if e[3]:
+        for team in teams_order:
+            teams[team][5] = rank
+            if teams[team][3]: #If team has solved some task, next team's rank will increase, otherwise it'll be same
                 rank += 1
+
+        config['teams_list'] = [((i,)+tuple(teams[i])) for i in teams_order]
+        config['results'] = TeamsResults
+        config['problem_list'] = sorted(problems)
+
         config['last_success'] = filter(
             lambda x: True if x['result'] == 'OK' or x['result'] == 'OC' else False,
-            subs)[0]
+            sorted(submissions, key=lambda x: x['time']))[0]
         config['last_submission'] = subs[0]
-        config['results'] = results
     except ParsingError as e:
         config = {'error': e.message}
     return config
