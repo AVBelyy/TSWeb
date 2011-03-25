@@ -17,6 +17,7 @@
         State: <b>{{ state }} {{ '%.0f' % (now/60) }}/{{ contlen }}</b><br />
         Last success: {{ last_success.htime }}, team <b>{{ last_success.team }}</b> &mdash; <b>{{ last_success.team_name }}</b>, problem <b>{{ last_success.problem }}</b><br />
         Last submission: {{ last_submission.htime }}, team <b>{{ last_submission.team }}</b> &mdash; <b>{{ last_submission.team_name }}</b>, problem <b>{{ last_submission.problem }}</b><br />
+        <a href="{{ request.script_root }}/index">Back to main page</a>
         <table border="1" cellpadding="4" class="mtab">
         <tr class="head">
             <th>ID</th>
@@ -90,6 +91,7 @@
         {% endif -%}
         {%- endfor %}
         </table>
+        <a href="{{ request.script_root }}/index">Back to main page</a>
         {% endif %}
     {% endif %}
     </body>
