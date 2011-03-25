@@ -200,8 +200,8 @@ def gen_monitor(history, data):
 
         config['last_success'] = filter(
             lambda x: True if x['result'] == 'OK' or x['result'] == 'OC' else False,
-            sorted(submissions, key=lambda x: x['time']))[0]
-        config['last_submission'] = subs[0]
+            sorted(submissions, key=lambda x: x['time'], reverse=1))[0]
+        config['last_submission'] = sorted(submissions, key=lambda x: x['time'], reverse=1)[0]
     except ParsingError as e:
         config = {'error': e.message}
     return config

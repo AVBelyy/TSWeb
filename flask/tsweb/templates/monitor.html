@@ -29,7 +29,7 @@
             <th>Time</th>
             <th>Rank</th>
         </tr>
-        {%- for rank, list in teams_list|groupby(6) -%}
+        {%- for rank, list in teams_list|groupby(4)|reverse -%}
         {% set class = loop.cycle('even', 'odd') %}
         {%- for team, mclass, set, name, solved, score, rank in list %}
         <tr class="{{ class }}">
