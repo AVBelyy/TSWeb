@@ -8,7 +8,7 @@
             <td>Problem:<br/><i>Choose here the problem id</i></td>
             <td>
                 <select name="prob">
-                {% for problem in problems %}
+                {% for problem in problems|sort %}
                     <option value="{{ problem }}">{{ problem }}{% if problems[problem] %}: {{ problems[problem] }}{% endif %}</option>
                 {% endfor %}
                 </select>
@@ -18,7 +18,7 @@
             <td>Language:<br /><i>Choose one of the compilers</i></td>
             <td>
                 <select name="lang">
-                {% for compiler in compilers %}
+                {% for compiler in compilers|sort %}
                     <option value="{{ compiler[0] }}">{{ compiler[0] }}{% if compiler[1] %}: {{ compiler[1] }}{% endif %}</option>
                 {% endfor %}
                 </select>

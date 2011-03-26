@@ -155,7 +155,7 @@ def get_compilers(SUBM):
     if not compilers:
         raise testsys.CommunicationException("No compilers defined")
 
-    return problems, compilers
+    return problems, compilers, extensions
 
 @tswebapp.route('/submit', methods=['GET', 'POST'])
 def sumbit():
@@ -170,7 +170,7 @@ def sumbit():
 
     try:
         try:
-            problems, compilers = get_compilers(SUBM)
+            problems, compilers, extensions = get_compilers(SUBM)
         except testsys.CommunicationException as e:
             return render_template("error.html", text=e.message)
 
@@ -280,11 +280,14 @@ def submits():
     finally:
         MSG.close()
 
+    if 'Error' in ans:
+        return testsys_error(ans['Error'])
+
     res = []
     for i in xrange(int(ans['Submits'])):
         res.append(ans['SubmProb_'+str(i)])
 
-    return ans['Submits']+str(res)
+    return str(ans)
 
 if __name__ == "__main__":
     tswebapp.run()
