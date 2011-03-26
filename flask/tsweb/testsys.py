@@ -5,6 +5,8 @@ import main
 
 _channels = {}
 
+teamname_regex = re.compile(r'^[A-Za-z\-\_0-9]{1,8}$')
+
 encode_regex = re.compile(r'([\x00-\x1f])')
 decode_regex = re.compile(r'\x18([\x40-\x5f])')
 
@@ -210,4 +212,4 @@ _channels = {
 }
 
 def valid_teamname(name):
-    return True
+    return teamname_regex.match(name) is not None
