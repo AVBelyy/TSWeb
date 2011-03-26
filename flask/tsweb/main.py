@@ -1,6 +1,7 @@
 
 import re, logging, logging.handlers
 import testsys, config, monitor
+from tsweb import decorators, util
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug import secure_filename
 
@@ -11,20 +12,7 @@ tswebapp.logger.setLevel(tswebapp.config['LOG_LEVEL'])
 tswebapp.logger.addHandler(logging.handlers.RotatingFileHandler(
               tswebapp.config['LOG_FILENAME'], maxBytes=2**20, backupCount=5))
 
-def redirector(url, **kwargs):
-    res = redirect(url)
-    res.response = [render_template("redirect.html", **kwargs)]
 
-    return res
-
-def login_error():
-    return render_template("error.html", text="Login error: session data missing or expired", title="Authentification Error")
-
-def error(msg):
-    return render_template("error.html", text=msg)
-
-def testsys_error(msg):
-    return render_template("error.html", text="TestSys reports following error: {0}".format(msg) if msg else "TestSys reports unknown error", title="TestSys error")
 
 @tswebapp.route('/')
 @tswebapp.route('/index')
@@ -43,7 +31,7 @@ def index():
 def logout():
     tm = ', {0}'.format(session['team']) if 'team' in session else ''
     session.pop('team', None)
-    return redirector(url_for('index'), text="Thanks for logging out{0}!".format(tm))
+    return util.redirector(url_for('index'), text="Thanks for logging out{0}!".format(tm))
 
 @tswebapp.route('/login', methods=['POST'])
 def login():
@@ -76,7 +64,7 @@ def login():
         session['contestid'] = ans.get('ContestId', '')
         session['team_name'] = ans.get('TeamName', '').decode('cp866')
 
-        return redirector(url_for('index'), text="Thank you for logging in, {0}!".format(session['team']))
+        return util.redirector(url_for('index'), text="Thank you for logging in, {0}!".format(session['team']))
     finally:
         MSG.close()
 
@@ -219,7 +207,7 @@ def sumbit():
             while ans:
                 if ans['ID'] == id:
                     if 'Error' in ans:
-                        return testsys_error(ans['Error'], title="Submit error")
+                        return util.testsys_error(ans['Error'])
                     else:
                         outp = 1
                         break
@@ -281,13 +269,41 @@ def submits():
         MSG.close()
 
     if 'Error' in ans:
-        return testsys_error(ans['Error'])
+        return util.testsys_error(ans['Error'])
 
     res = []
     for i in xrange(int(ans['Submits'])):
         res.append(ans['SubmProb_'+str(i)])
 
     return str(ans)
+
+@tswebapp.route('/getnewmsg')
+@decorators.login_required
+def getnewmsg():
+    state, answer = util.communicate('MSG', {
+        'Team': session['team'],
+        'Password': session['password'],
+        'ContestId': session['contestid'],
+        'Command': 'WaitingCount'})
+
+    if state == 'error':
+        return answer
+
+    answer, channel, id = answer
+    if answer['ID'] == id:
+        wtc = int(answer['WaitingCount']) - 1
+        state, answer = util.communicate(channel)
+
+        if state == 'error':
+            return answer
+
+        answer, channel, id = answer
+        id = answer['ID']
+        tswebapp.logger.debug('Got wtc: '+str(wtc))
+    else:
+        id = answer['ID']
+
+    return render_template("getnewmsg.html", message=answer['Message'], id=id)
 
 if __name__ == "__main__":
     tswebapp.run()
