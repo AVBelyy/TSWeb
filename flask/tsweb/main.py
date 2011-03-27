@@ -245,38 +245,59 @@ def monitor_page():
         return render_template("monitor.html", **config)
 
 @tswebapp.route('/allsubmits')
-def submits():
-    if not 'team' in session:
-        return login_error()
+@decorators.login_required
+@decorators.channel_user('MSG')
+def submits(channel):
+    state, answer = util.communicate(channel, {
+        'Team': session['team'],
+        'Password': session['password'],
+        'ContestId': session['contestid'],
+        'DisableUnrequested': '1',
+        'AllSubm': request.args.get('all', 0),
+        'Command': 'AllSubmits'})
 
-    MSG = testsys.get_channel('MSG')
-    try:
-        MSG.open(1)
-    except testsys.ConnectionFailedException:
-        return error("Cannot connect to testsys")
+    if state == 'error':
+        return answer
 
-    try:
-        id = MSG.send({
-            'Team': session['team'],
-            'Password': session['password'],
-            'ContestId': session['contestid'],
-            'DisableUnrequested': '1',
-            'AllSubm': request.args.get('all', 0),
-            'Command': 'AllSubmits'})
-        ans = MSG.recv()
-    except testsys.CommunicationException as e:
-        return error(e.message)
-    finally:
-        MSG.close()
+    answer, id = answer
 
-    if 'Error' in ans:
-        return util.testsys_error(ans['Error'])
+    submissions = []
+    feed, score, team, tl, ml = False, False, False, False, False
+    for i in xrange(1, int(answer['Submits'])):
+        res = {
+            'Problem': answer.get('SubmProb_'+str(i), ''),
+            'ID': answer.get('SubmID_'+str(i), ''),
+            'Time': answer.get('SubmTime_'+str(i), ''),
+            'Result': answer.get('SubmRes_'+str(i), ''),
+            'Test': answer.get('SubmTest_'+str(i), ''),
+            'CE': answer.get('SubmCE_'+str(i), '').decode('cp866'),
+            'Attempt': answer.get('SubmAtt_'+str(i), ''),
+            'Feedback': answer.get('SubmFeed_'+str(i), ''),
+            'Compiler': answer.get('SubmCompiler_'+str(i), ''),
+            'TokenUsed': answer.get('SubmTokenUsed_'+str(i), ''),
+            'Score': answer.get('SubmScore_'+str(i), ''),
+            'Team': answer.get('SubmTeam_'+str(i), '').decode('cp866'),
+            'TL': answer.get('SubmTL_'+str(i), ''),
+            'ML': answer.get('SubmML_'+str(i), '')}
+        if res['Feedback']:
+            feed = True
+        if res['Score']:
+            score = True
+        if res['Team']:
+            team = True
+        if res['TL']:
+            tl = True
+        if res['ML']:
+            ml = True
+        submissions.append(res)
 
-    res = []
-    for i in xrange(int(ans['Submits'])):
-        res.append(ans['SubmProb_'+str(i)])
+    if team:
+        submissions.sort(key=lambda x: int(x['ID']), reverse=1)
+    else:
+        submissions.sort(key=lambda x: int(x['ID']))
 
-    return str(ans)
+    return render_template("allsubmits.html", feed=feed, score=score, team=team,
+            tl=tl, ml=ml, submissions=submissions)
 
 @tswebapp.route('/getnewmsg')
 @decorators.login_required

@@ -27,7 +27,7 @@ def communicate(chan, request=None, check_empty=True):
             channel.open(1)
         except testsys.ConnectionFailedException as e:
             return ('error', error(e.message))
-    
+
     if request:
         try:
             id = channel.send(request)
@@ -43,4 +43,3 @@ def communicate(chan, request=None, check_empty=True):
         return ('error', testsys_error(answer['Error']))
  
     return ('ok', (answer, id))
- 

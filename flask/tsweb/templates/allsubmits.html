@@ -1,0 +1,70 @@
+<html>
+    {% set title = "Submits list" %}
+    {% include "header.html" %}
+    <body>
+        <h1>Submits list</h1>
+        <p><a href="{{ request.script_root }}/index">Back to main page</a></p>
+        <p>
+        <table border="1" align="left" cellpadding="2" cellspacing="3">
+        <tr>
+            <th>ID</th>
+            <th>Problem</th>
+            <th>Attempt</th>
+            <th>Time</th>
+            <th>Compiler</th>
+            <th>Result</th>
+            <th>TestN</th>
+            {% if tl %}<th>MaxTime</th>{% endif -%}
+            {% if ml %}<th>MaxMem</th>{% endif -%}
+            <th>Text</th>
+            {% if team %}<th>Comment</th>{% else %}<th>CE Cause</th>{% endif -%}
+            {% if feed %}<th>Feedback</th>{% endif -%}
+            {% if token %}<th>Use Token</th>{% endif -%}
+            {% if score %}<th>Score</th>{% endif -%}
+            {% if team %}<th>Team</th>{% endif %}
+        </tr>
+        {% for sub in submissions %}
+        {%- if sub['Result'] == 'OK' -%}
+        {% set class = "fok" %}
+        {%- elif sub['Result'] in ('WA', 'PE', 'CE', 'RE', 'RT', 'SV') -%}
+        {%- set class = "fwa" %}
+        {%- elif sub['Result'] in ('TL', 'ML') -%}
+        {%- set class = "fle" %}
+        {%- elif sub['Result'] == 'PC' -%}
+        {%- set class = "fpc" %}
+        {%- elif sub['Result'] in ('JE', 'FT') -%}
+        {%- set class = "fje" %}
+        {% endif -%}
+        <tr class="{{ class }}">
+            <td>{{ sub['ID'] }}</td>
+            <td>{{ sub['Problem'] }}</td>
+            <td>{{ sub['Attempt'] }}</td>
+            <td>{{ sub['Time'] }}</td>
+            <td>{{ sub['Compiler'] }}</td>
+            <td>{{ sub['Result'] }}</td>
+            <td>{{ sub['Test'] }}</td>
+            {% if tl %}<td>{{ sub['TL']|d('&nbsp;') }}</td>{% endif %}
+            {% if ml %}<td>{{ sub['ML']|d('&nbsp;') }}</td>{% endif %}
+            <td><a href="{{ request.script_root }}/allsubmits/view/{{ sub['ID'] }}">View</a></td>
+            <td>
+                {%- if sub['Result'] == 'CE' -%}
+                <a href="{{ request.scpirt_root }}/allsubmits/feedback/{{ sub['ID'] }}">View CE Report</a>
+                {%- elif sub['CE'] -%}
+                {{ sub['CE']}}
+                {%- else -%}
+                &nbsp;
+                {%- endif -%}
+            </td>
+            {% if feed %}<td>{% if sub['Feedback'] %}<a href="{{ request.script_root }}/allsubmits/feedback/{{ sub['ID'] }}">View</a>{% else %}&nbsp;{% endif %}</td>{% endif %}
+            {% if score %}<td>{{ sub['Score']|d('&nbsp;') }}</td>{% endif -%}
+            {% if team %}<td>{{ sub['Team']|d('&nbsp;') }}</td>{% endif -%}
+        </tr>
+        {%- endfor %}
+        </table>
+        </p>
+        <p><a href="{{ request.script_root }}/index">Back to main page</a></p>
+    </body>
+</html>
+
+{# vim: ft=htmldjango
+#}

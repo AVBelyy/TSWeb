@@ -16,22 +16,26 @@ def login_required(f):
 
     return wrapper
 
-def channel_fetcher(chan, request):
+def channel_fetcher(request, auth=False):
     """
     This wrappper fetches data from testsys and calls decorated function with
-    answer dict as first argument.
+    answer dict as first argument. It assumes function's first argument is
+    channel instance, as done by @channel_user decorator
     """
     def decorator(f):
         @wraps(f)
-        def wrapper(*args, **kwargs):
-            state, result = util.communicate(chan, request)
+        def wrapper(channel, *args, **kwargs):
+            if auth:
+                #Fill in authenthication data
+                request['Team'] = session['team']
+                request['Password'] = session['password']
+                request.setdefault('ContestId', session['contestid'])
+            state, result = util.communicate(channel, request)
             if state == 'error':
                 return result
             else:
                 answer, channel, id = answer
-                res = f(answer, channel, id, *args, **kwargs)
-                channel.close()
-                return res
+                return f(answer, channel, id, *args, **kwargs)
         return wrapper
     return decorator
 
