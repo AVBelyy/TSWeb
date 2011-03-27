@@ -188,7 +188,8 @@ class Channel():
                 main.tswebapp.logger.debug('Timeout reached while receiveing from {0.sock} port {0.port}'.format(self))
                 break
 
-            self._recv()
+            if not self._recv():
+                break
 
             if self.partial:
                 main.tswebapp.logger.debug("Partially recieved {0} bytes".format(len(self.partial)))
