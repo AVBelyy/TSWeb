@@ -26,21 +26,21 @@ def communicate(chan, request=None, check_empty=True):
         try:
             channel.open(1)
         except testsys.ConnectionFailedException as e:
-            return ('error', util.error(e.message))
+            return ('error', error(e.message))
     
     if request:
         try:
             id = channel.send(request)
         except testsys.CommunicationException as e:
-            return ('error', util.error(e.message))
+            return ('error', error(e.message))
     else:
         id = 0
  
     answer = channel.recv()
     if not answer and check_empty:
         return ('error', error("Empty response from testsys"))
-        if 'Error' in answer:
-            return ('error', testsys_error(answer['Error']))
+    if 'Error' in answer:
+        return ('error', testsys_error(answer['Error']))
  
-    return ('ok', (answer, channel, id))
+    return ('ok', (answer, id))
  

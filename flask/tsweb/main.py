@@ -211,7 +211,8 @@ def sumbit():
                     else:
                         outp = 1
                         break
-            return render_template("submit_status.html", error=outp)
+                ans = SUBM.recv()
+            return render_template("submit_status.html", error=not outp)
     finally:
         SUBM.close()
 
@@ -279,8 +280,9 @@ def submits():
 
 @tswebapp.route('/getnewmsg')
 @decorators.login_required
-def getnewmsg():
-    state, answer = util.communicate('MSG', {
+@decorators.channel_user('MSG')
+def getnewmsg(channel):
+    state, answer = util.communicate(channel, {
         'Team': session['team'],
         'Password': session['password'],
         'ContestId': session['contestid'],
@@ -289,18 +291,27 @@ def getnewmsg():
     if state == 'error':
         return answer
 
-    answer, channel, id = answer
+    answer, id = answer
     if answer['ID'] == id:
-        wtc = int(answer['WaitingCount']) - 1
-        state, answer = util.communicate(channel)
-
-        if state == 'error':
-            return answer
-
-        answer, channel, id = answer
-        id = answer['ID']
+        wtc = int(answer['WaitingCount'])
         tswebapp.logger.debug('Got wtc: '+str(wtc))
+        if wtc == 0:
+            return render_template("getnewmsg.html")
+        if 'confirm' in request.args:
+            state, answer = util.communicate(channel, {'ID': request.args['confirm'], 'Command': 'DisableUnrequested'})
+            if state == 'error':
+                return answer
+            return render_template("msg_confirm.html", wtc=wtc - 1)
+        else:
+            state, answer = util.communicate(channel)
+
+            if state == 'error':
+                return answer
+
+            answer, id = answer
+            id = answer['ID']
     else:
+        wtc = 0
         id = answer['ID']
 
     return render_template("getnewmsg.html", message=answer['Message'], id=id)

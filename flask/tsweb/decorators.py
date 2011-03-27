@@ -28,7 +28,29 @@ def channel_fetcher(chan, request):
             if state == 'error':
                 return result
             else:
-                return f(answer, *args, **kwargs)
+                answer, channel, id = answer
+                res = f(answer, channel, id, *args, **kwargs)
+                channel.close()
+                return res
         return wrapper
     return decorator
 
+def channel_user(chan):
+    """
+    This wrapper opens channel for function and closes it on function exit
+    """
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            channel = testsys.get_channel(chan)
+            try:
+                channel.open(1)
+            except testsys.ConnectionFailedException as e:
+                return util.error(e.message)
+
+            try:
+                return f(channel, *args, **kwargs)
+            finally:
+                channel.close()
+        return wrapper
+    return decorator

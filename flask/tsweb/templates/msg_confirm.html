@@ -1,0 +1,11 @@
+<html>
+    {% set title = "New messages" %}
+    {% include "header.html" %}
+    <body>
+        Confirmation sent. {% if wtc %}<a href="{{ request.script_root }}/getnewmsg">{{ wtc }} more pending messages</a>reported.{% endif %}<br /><br />
+        <a href="{{ request.script_root }}/index">Main page</a>
+    </body>
+</html>
+
+{# vim: ft=htmldjango
+#}
