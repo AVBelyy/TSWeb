@@ -1,5 +1,8 @@
 
 from flask import redirect, render_template
+from pygments.lexers import guess_lexer
+from pygments.formatters import HtmlFormatter
+from pygments import highlight as p_highlight
 
 from tsweb import testsys
 
@@ -43,3 +46,7 @@ def communicate(chan, request=None, check_empty=True):
         return ('error', testsys_error(answer['Error']))
  
     return ('ok', (answer, id))
+
+def highlight(text):
+    lexer = guess_lexer(text)
+    return p_highlight(text, lexer, HtmlFormatter(full=True, style='manni'))

@@ -12,8 +12,6 @@ tswebapp.logger.setLevel(tswebapp.config['LOG_LEVEL'])
 tswebapp.logger.addHandler(logging.handlers.RotatingFileHandler(
               tswebapp.config['LOG_FILENAME'], maxBytes=2**20, backupCount=5))
 
-
-
 @tswebapp.route('/')
 @tswebapp.route('/index')
 def index():
@@ -298,6 +296,25 @@ def submits(channel):
 
     return render_template("allsubmits.html", feed=feed, score=score, team=team,
             tl=tl, ml=ml, submissions=submissions)
+
+@tswebapp.route('/allsubmits/view/<int:id>')
+@decorators.login_required
+@decorators.channel_user('MSG')
+def viewsubmit(channel, id):
+    state, answer = util.communicate(channel, {
+        'Team': session['team'],
+        'Password': session['password'],
+        'ContestId': session['contestid'],
+        'DisableUnrequested': '1',
+        'SubmID': id,
+        'Command': 'SubmText'})
+
+    if state == 'error':
+        return answer
+
+    answer, ans_id = answer
+
+    return util.highlight(answer['SubmText'].decode('cp1251'))
 
 @tswebapp.route('/getnewmsg')
 @decorators.login_required
