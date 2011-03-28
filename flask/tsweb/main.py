@@ -334,6 +334,24 @@ def feedback(channel, id):
 
     return render_template("feedback.html", hdr=answer['FeedbackAddHeader'], feedback=answer['Feedback'].decode('cp1251'), id=id)
 
+@tswebapp.route('/contests')
+@decorators.login_required
+@decorators.channel_user('MSG')
+def contests(channel):
+    state, answer = util.communicate(channel, {
+        'Team': session['team'],
+        'Password': session['password'],
+        'ContestId': session['contestid'],
+        'Command': 'ListContests',
+        'Mask': request.args.get('mask', 1)})
+
+    if state == 'error':
+        return answer
+
+    answer, ans_id = answer
+    contests = util.parse_contests(answer['Contests'].decode('cp866'))
+    return render_template("contests.html", contests=contests)
+
 @tswebapp.route('/getnewmsg')
 @decorators.login_required
 @decorators.channel_user('MSG')

@@ -1,0 +1,31 @@
+<html>
+    {% set title = "List of contests" %}
+    {% include "header.html" %}
+    <body>
+        <h1>{{ title }}</h1>
+        <table border="1" cellpadding="2" cellspacing="3">
+        <tr class="head">
+            <th>Contest ID<br />
+            <small>Click to enter</small></th>
+            <th>Contest Name<br />
+            <small>Click to read statements</small></td>
+            <th>State</th>
+            <th>Started at</th>
+            <th>Teams count</th>
+        </tr>
+        {%- for contest in contests %}
+        <tr>
+            <td>{{ contest['id'] }}</td>
+            <td>{{ contest['name'] }}</td>
+            <td>{{ contest['state'] }}</td>
+            <td>{{ contest['startedat'] }}</td>
+            <td>{{ contest['teams'] }}</td>
+        </tr>
+        {%- endfor %}
+        </table>
+        <a href="{{ request.script_root }}/index">Back to main page</a>
+    </body>
+</html>
+
+{# vim: ft=htmldjango
+#}

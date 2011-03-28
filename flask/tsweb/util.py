@@ -3,6 +3,8 @@ from flask import redirect, render_template
 from pygments.lexers import guess_lexer
 from pygments.formatters import HtmlFormatter
 from pygments import highlight as p_highlight
+from BeautifulSoup import BeautifulSoup as bs
+from urlparse import urlparse, parse_qsl
 
 from tsweb import testsys
 
@@ -50,3 +52,19 @@ def communicate(chan, request=None, check_empty=True):
 def highlight(text):
     lexer = guess_lexer(text)
     return p_highlight(text, lexer, HtmlFormatter(full=True, style='manni'))
+
+def parse_contests(text):
+    soup = bs(text)
+    contests = []
+    for tr in soup('tr'):
+        contest = {}
+        tds = tr('td')
+        contest['id'] = tds[0].getText()
+        a = tds[1]('a')[0]
+        contest['statements'] = a['href']
+        contest['name'] = a.getText()
+        contest['state'] = tds[2].getText()
+        contest['startedat'] = tds[3].getText()
+        contest['teams'] = tds[4].getText()
+        contests.append(contest)
+    return contests
