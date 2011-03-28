@@ -47,13 +47,7 @@
             {% if ml %}<td>{{ sub['ML']|d('&nbsp;') }}</td>{% endif %}
             <td><a href="{{ request.script_root }}/allsubmits/view/{{ sub['ID'] }}">View</a></td>
             <td>
-                {%- if sub['Result'] == 'CE' -%}
-                <a href="{{ request.scpirt_root }}/allsubmits/feedback/{{ sub['ID'] }}">View CE Report</a>
-                {%- elif sub['CE'] -%}
-                {{ sub['CE']}}
-                {%- else -%}
-                &nbsp;
-                {%- endif -%}
+                <pre>{{ sub['CE']}}</pre>
             </td>
             {% if feed %}<td>{% if sub['Feedback'] %}<a href="{{ request.script_root }}/allsubmits/feedback/{{ sub['ID'] }}">View</a>{% else %}&nbsp;{% endif %}</td>{% endif %}
             {% if score %}<td>{{ sub['Score']|d('&nbsp;') }}</td>{% endif -%}

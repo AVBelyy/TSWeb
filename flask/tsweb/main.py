@@ -316,6 +316,24 @@ def viewsubmit(channel, id):
 
     return util.highlight(answer['SubmText'].decode('cp1251'))
 
+@tswebapp.route('/allsubmits/feedback/<int:id>')
+@decorators.login_required
+@decorators.channel_user('MSG')
+def feedback(channel, id):
+    state, answer = util.communicate(channel, {
+        'Team': session['team'],
+        'Password': session['password'],
+        'ContestId': session['contestid'],
+        'SubmID': id,
+        'Command': 'ViewFeedback'})
+
+    if state == 'error':
+        return answer
+
+    answer, ans_id = answer
+
+    return render_template("feedback.html", hdr=answer['FeedbackAddHeader'], feedback=answer['Feedback'].decode('cp1251'), id=id)
+
 @tswebapp.route('/getnewmsg')
 @decorators.login_required
 @decorators.channel_user('MSG')
