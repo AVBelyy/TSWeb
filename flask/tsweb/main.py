@@ -241,7 +241,7 @@ def monitor_page():
 @decorators.login_required
 def changecontest(id):
     session['contestid'] = id
-    return util.redirector('/index', text="Your contest has been changed to {0}, {1}!".format(id, session['team']))
+    return util.redirector(url_for('index'), text="Your contest has been changed to {0}, {1}!".format(id, session['team']))
 
 @tswebapp.route('/allsubmits')
 @decorators.login_required
