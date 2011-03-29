@@ -1,6 +1,7 @@
 
 from flask import session
 from functools import wraps
+from copy import copy
 
 from tsweb import util, testsys
 
@@ -25,17 +26,18 @@ def channel_fetcher(request, auth=False):
     def decorator(f):
         @wraps(f)
         def wrapper(channel, *args, **kwargs):
+            req = copy(request)
             if auth:
                 #Fill in authenthication data
-                request['Team'] = session['team']
-                request['Password'] = session['password']
-                request.setdefault('ContestId', session['contestid'])
-            state, result = util.communicate(channel, request)
+                req['Team'] = session['team']
+                req['Password'] = session['password']
+                req.setdefault('ContestID', session['contestid'])
+            state, result = util.communicate(channel, req)
             if state == 'error':
                 return result
             else:
-                answer, channel, id = answer
-                return f(answer, channel, id, *args, **kwargs)
+                answer, id = result
+                return f(answer, id, *args, **kwargs)
         return wrapper
     return decorator
 
