@@ -15,8 +15,8 @@
         </tr>
         {%- for contest in contests %}
         <tr>
-            <td>{{ contest['id'] }}</td>
-            <td>{{ contest['name'] }}</td>
+            <td><a href="{{ request.script_root }}/contest/{{ contest['id'] }}">{{ contest['id'] }}</a></td>
+            <td><a href="{{ contest['statements'] }}">{{ contest['name'] }}</a></td>
             <td>{{ contest['state'] }}</td>
             <td>{{ contest['startedat'] }}</td>
             <td>{{ contest['teams'] }}</td>

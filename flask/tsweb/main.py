@@ -19,11 +19,6 @@ def index():
         return format_main_page()
     else:
         return render_template("index.html")
-#    else:
-#        if request.form['op'] == 'changecontest':
-#            session['contestid'] = request.form['newcontestid']
-#            session['cookie_state'] = 2
-#            return render_template("redirect.html", text="Your contest has been changed to {0}, {1}".format(session['contestid'], request.form['team']))
 
 @tswebapp.route('/logout')
 def logout():
@@ -241,6 +236,12 @@ def monitor_page():
     else:
         config = monitor.gen_monitor(ans['History'], ans['Monitor'])
         return render_template("monitor.html", **config)
+
+@tswebapp.route('/contest/<id>')
+@decorators.login_required
+def changecontest(id):
+    session['contestid'] = id
+    return util.redirector('/index', text="Your contest has been changed to {0}, {1}!".format(id, session['team']))
 
 @tswebapp.route('/allsubmits')
 @decorators.login_required
