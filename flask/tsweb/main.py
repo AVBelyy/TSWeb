@@ -97,17 +97,8 @@ def format_main_page():
 
     return render_template("main.html", **config)
 
-def get_compilers(SUBM):
-    SUBM.send({
-        'Team': session['team'],
-        'Password': session['password'],
-        'ContestId': session['contestid'],
-        'Request': 'ContestData'})
-
-    ans = SUBM.recv()
-    if 'Error' in ans:
-        raise testsys.CommunicationException(ans['Error'])
-
+@decorators.channel_fetcher({'Request': 'ContestData'}, auth=True)
+def get_compilers(ans, id):
     pmode = 0
     compilers, problems, extensions = [], {}, {}
     data = ans['Data'].decode('cp866')
@@ -262,7 +253,7 @@ def submits(channel):
 
     submissions = []
     feed, score, team, tl, ml = False, False, False, False, False
-    for i in xrange(1, int(answer['Submits'])):
+    for i in xrange(int(answer['Submits'])):
         res = {
             'Problem': answer.get('SubmProb_'+str(i), ''),
             'ID': answer.get('SubmID_'+str(i), ''),
@@ -390,6 +381,27 @@ def getnewmsg(channel):
         id = answer['ID']
 
     return render_template("getnewmsg.html", message=answer['Message'], id=id)
+
+@tswebapp.route('/clars')
+@decorators.login_required
+@decorators.channel_user('MSG')
+@decorators.channel_fetcher({'DisableUnrequested': 1, 'Command': 'AllClars'}, auth=True)
+@decorators.channel_user('SUBMIT')
+def clars(channel, clars_data, ans_id):
+    problems, compilers, extensions = get_compilers(channel)
+    problems['*'] = 'Generic'
+    clars = []
+    for i in xrange(int(clars_data['Clars'])):
+        clar = {}
+        clar['from'] = clars_data.get('ClarFrom_'+str(i), '')
+        clar['problem'] = clars_data.get('ClarProb_'+str(i), '')
+        clar['question'] = clars_data.get('ClarQ_'+str(i), '').decode('cp1251')
+        clar['answer'] = clars_data.get('ClarA_'+str(i), '').decode('cp1251')
+        clar['answered'] = clars_data.get('ClarAnswd_'+str(i), '')
+        clar['broadcast'] = clars_data.get('ClarBCast_'+str(i), '')
+        clars.append(clar)
+    return render_template("clars.html", problems=problems, clars=clars)
+
 
 if __name__ == "__main__":
     tswebapp.run()

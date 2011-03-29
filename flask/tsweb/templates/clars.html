@@ -1,0 +1,53 @@
+<html>
+    {% set title = "Testsys Clarification Request" %}
+    {% include "header.html" %}
+    <body class="subm">
+        <h1>Clarification Request</h1>
+        <table border="1" align="center" cellpadding="2" cellspacing="3">
+        <tr>
+            <td>From</td>
+            <td>Problem</td>
+            <td>Question</td>
+            <td>Answer</td>
+            <td>Answered</td>
+            <td>Broadcast</td>
+        </tr>
+        {%- for c in clars %}
+        <tr>
+            <td>{{ c['from']|d('&nbsp;') }}</td>
+            <td>{{ c['problem']|d('&nbsp;') }}</td>
+            <td>{{ c['question']|d('&nbsp;') }}</td>
+            <td>{{ c['answer']|d('&nbsp;') }}</td>
+            <td>{% if c['answered'] %}Yes{% else %}No{% endif %}</td>
+            <td>{% if c['broadcast'] %}Yes{% else %}No{% endif %}</td>
+        </tr>
+        {%- endfor %}
+        </table>
+        <form action="{{ request.script_root }}/clars/submit" method="post" class="frm">
+        <table align="center" cellpadding="2" cellspacing="3">
+        <tr class="od">
+            <td>Problem:<br /><i>Choose here the problem id...</i></td>
+            <td>
+                <select name="prob">
+                {%- for problem in problems|sort %}
+                    <option value="{{ problem }}">{{ problem }}{% if problems[problem] %}: {{ problems[problem] }}{% endif %}</option>
+                {%- endfor %}
+            </td>
+        <tr class="ev">
+            <td>Clarification text:</td>
+            <td><textarea name="clar" cols="40" rows="5" wrap="virtual"></textarea></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td><input class="submb" type="submit" value="Submit Clarification Request"></td>
+        </tr>
+        <tr>
+            <td colspan="2"><a href="{{ request.script_root }}/index">Back to main page</a></td>
+        </tr>
+        </table>
+        </form>
+    </body>
+</html>
+
+{# vim: ft=htmldjango
+#}
