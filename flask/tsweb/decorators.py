@@ -31,7 +31,7 @@ def channel_fetcher(request, auth=False):
                 #Fill in authenthication data
                 req['Team'] = session['team']
                 req['Password'] = session['password']
-                req.setdefault('ContestID', session['contestid'])
+                req.setdefault('ContestId', session['contestid'])
             state, result = util.communicate(channel, req)
             if state == 'error':
                 return result
