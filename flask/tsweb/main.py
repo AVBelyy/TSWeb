@@ -86,7 +86,7 @@ def format_main_page():
         config['jury'] = True if ans.get('JuryMode', False) else False
         config['statements'] = ans.get('StatementsLink', '')
         config['contlist_mask'] = tswebapp.config['CONTLIST_MASK']
-        config['messages'] = re.split('\r?\n', ans.get('AllMessages', ''))
+        config['messages'] = re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251'))
         config['version'] = ans.get('Version', 0)
         config['contid'] = ans.get('ContestId', '')
         config['contname'] = ans.get('ContestName', '').decode('cp866')
