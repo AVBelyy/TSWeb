@@ -130,75 +130,52 @@ def get_compilers(ans, id):
     return problems, compilers, extensions
 
 @tswebapp.route('/submit', methods=['GET', 'POST'])
-def sumbit():
-    if not 'team' in session:
-        return login_error()
-
-    SUBM = testsys.get_channel('SUBMIT')
+@decorators.login_required
+@decorators.channel_user('SUBMIT')
+def sumbit(channel):
     try:
-        SUBM.open(1)
-    except testsys.ConnectionFailedException:
-        return error("Cannot connect to TESTSYS")
+        problems, compilers, extensions = get_compilers(channel)
+    except testsys.CommunicationException as e:
+        return render_template("error.html", text=e.message)
 
-    try:
-        try:
-            problems, compilers, extensions = get_compilers(SUBM)
-        except testsys.CommunicationException as e:
-            return render_template("error.html", text=e.message)
+    if request.method == 'GET':
+        config = {}
+        config['problems'] = problems
+        config['compilers'] = compilers
+        return render_template("submit.html", **config)
+    elif request.method == 'POST':
+        if request.files['file']:
+            data = request.files['file'].read().encode('cp866')
+            filepath = secure_filename(request.files['file'].filename)
+            filename = ''.join(filepath.split('.')[:-1])
+        if request.form['solution']:
+            data = request.form['solution']
+            filepath = request.form['prob'] + '.' + request.form['lang']
+            filename = request.form['prob']
 
-        if request.method == 'GET':
-            config = {}
-            config['problems'] = problems
-            config['compilers'] = compilers
-            return render_template("submit.html", **config)
-        elif request.method == 'POST':
-            if request.files['file']:
-                data = request.files['file'].read().encode('cp866')
-                filepath = secure_filename(request.files['file'].filename)
-                filename = ''.join(filepath.split('.')[:-1])
-            if request.form['solution']:
-                data = request.form['solution']
-                filepath = request.form['prob'] + '.' + request.form['lang']
-                filename = request.form['prob']
+        if not data:
+            return error("No solution presented")
+        if not filepath.split('.')[-1] in extensions:
+            return error("Invalid file type")
+        if not request.form['prob'] in problems:
+            return error("Unknown problem '{0}'".format(request.form['prob']))
+        if not request.form['lang'] in extensions:
+            return error("Unknown compiler '{0}'".format(request.form['lang']))
 
-            if not data:
-                return error("No solution presented")
-            if not filepath.split('.')[-1] in extensions:
-                return error("Invalid file type")
-            if not request.form['prob'] in problems:
-                return error("Unknown problem '{0}'".format(request.form['prob']))
-            if not request.form['lang'] in extensions:
-                return error("Unknown compiler '{0}'".format(request.form['lang']))
+        state, answer = util.communicate(channel, {
+            'Team': session['team'],
+            'Password': session['password'],
+            'ContestId': session['contestid'],
+            'Problem': request.form['prob'],
+            'Contents': data,
+            'Source': filename,
+            'Compiler': extensions[request.form['lang']],
+            'Extension': request.form['lang']})
 
-            timeout = len(data) / 16384
-            if timeout > 4:
-                timeout = 4
+        if state == 'error':
+            return answer
 
-            timeout = (timeout+2)*tswebapp.config['TIMEOUT']
-
-            id = SUBM.send({
-                'Team': session['team'],
-                'Password': session['password'],
-                'ContestId': session['contestid'],
-                'Problem': request.form['prob'],
-                'Contents': data,
-                'Source': filename,
-                'Compiler': extensions[request.form['lang']],
-                'Extension': request.form['lang']}, timeout)
-
-            ans = SUBM.recv()
-            outp = 0
-            while ans:
-                if ans['ID'] == id:
-                    if 'Error' in ans:
-                        return util.testsys_error(ans['Error'])
-                    else:
-                        outp = 1
-                        break
-                ans = SUBM.recv()
-            return render_template("submit_status.html", error=not outp)
-    finally:
-        SUBM.close()
+        return render_template("submit_status.html")
 
 @tswebapp.route('/monitor')
 def monitor_page():
