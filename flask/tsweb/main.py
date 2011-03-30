@@ -393,15 +393,30 @@ def clars(channel, clars_data, ans_id):
     clars = []
     for i in xrange(int(clars_data['Clars'])):
         clar = {}
-        clar['from'] = clars_data.get('ClarFrom_'+str(i), '')
-        clar['problem'] = clars_data.get('ClarProb_'+str(i), '')
+        clar['from'] = clars_data.get('ClarFrom_'+str(i), '').decode('cp1251')
+        clar['problem'] = clars_data.get('ClarProb_'+str(i), '').decode('cp1251')
         clar['question'] = clars_data.get('ClarQ_'+str(i), '').decode('cp1251')
         clar['answer'] = clars_data.get('ClarA_'+str(i), '').decode('cp1251')
-        clar['answered'] = clars_data.get('ClarAnswd_'+str(i), '')
-        clar['broadcast'] = clars_data.get('ClarBCast_'+str(i), '')
+        clar['answered'] = int(clars_data.get('ClarAnswd_'+str(i), 0))
+        clar['broadcast'] = int(clars_data.get('ClarBCast_'+str(i), 0))
         clars.append(clar)
     return render_template("clars.html", problems=problems, clars=clars)
 
+@tswebapp.route('/clars/submit', methods=['POST'])
+@decorators.login_required
+@decorators.channel_user('MSG')
+def submit_clar(channel):
+    state, answer = util.communicate(channel, {
+        'Team': session['team'],
+        'Password': session['password'],
+        'ContestId': session['contestid'],
+        'Problem': request.form['prob'],
+        'Command': 'Clar',
+        'Clar': request.form['clar'].encode('cp866')})
+    if state == 'error':
+        return answer
+
+    return render_template("clar_status.html")
 
 if __name__ == "__main__":
     tswebapp.run()
