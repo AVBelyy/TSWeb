@@ -17,7 +17,7 @@ def login_required(f):
 
     return wrapper
 
-def channel_fetcher(request, auth=False):
+def channel_fetcher(request={}, auth=False):
     """
     This wrappper fetches data from testsys and calls decorated function with
     answer dict as first argument. It assumes function's first argument is
