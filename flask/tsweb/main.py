@@ -34,66 +34,43 @@ def login():
     if not request.form['password']:
         return render_template("error.html", text="Non-empty password expected")
 
-    MSG = testsys.Channel('MSG')
-    try:
-        MSG.open(1)
-    except testsys.ConnectionFailedException:
-        return render_template("error.html", text="Cannot connect to TESTSYS")
-
-    try:
-        MSG.send({
+    state, answer = util.communicate('MSG', {
             'Team': request.form['team'],
             'Password': request.form['password'],
             'ContestId': request.form.get('contestid', ''),
             'AllMessages': 'Yes',
             'DisableUnrequested': 1})
 
-        ans = MSG.recv()
-        if 'Error' in ans:
-            return render_template("error.html", text="Error logging in: {0}".format(ans['Error']))
+    if state == 'error':
+        return answer
 
-        session['team'] = request.form['team']
-        session['password'] = request.form['password']
-        session['contestid'] = ans.get('ContestId', '')
-        session['team_name'] = ans.get('TeamName', '').decode('cp866')
+    answer = answer[0]
 
-        return util.redirector(url_for('index'), text="Thank you for logging in, {0}!".format(session['team']))
-    finally:
-        MSG.close()
+    session['team'] = request.form['team']
+    session['password'] = request.form['password']
+    session['contestid'] = answer.get('ContestId', '')
+    session['team_name'] = answer.get('TeamName', '').decode('cp866')
 
-def format_main_page():
-    MSG = testsys.Channel('MSG')
-    try:
-        MSG.open(1)
-    except testsys.ConnectionFailedException:
-        return render_template("main.html", error="Cannot connect to TESTSYS")
+    return util.redirector(url_for('index'), text="Thank you for logging in, {0}!".format(session['team']))
 
-    MSG.send({
-        'Team': session['team'],
-        'Password': session['password'],
-        'ContestId': session.get('contestid', ''),
-        'AllMessages': 'Yes',
-        'DisableUnrequested': 1})
-
-    ans = MSG.recv()
+@decorators.channel_user('MSG')
+@decorators.channel_fetcher({
+    'AllMessages': 'Yes',
+    'DisableUnrequested': 1}, auth=True)
+def format_main_page(ans, ans_id):
     config = {}
-    if not ans:
-        config['error'] = 'Cannot connect to TESTSYS'
-    elif ans.get('Error', ''):
-        config['error'] = 'Testsys response: {0}'.format(ans['Error'])
-    else:
-        config['wtc'] = int(ans.get('WaitingCount', 0))
-        config['jury'] = True if ans.get('JuryMode', False) else False
-        config['statements'] = ans.get('StatementsLink', '')
-        config['contlist_mask'] = tswebapp.config['CONTLIST_MASK']
-        config['messages'] = re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251'))
-        config['version'] = ans.get('Version', 0)
-        config['contid'] = ans.get('ContestId', '')
-        config['contname'] = ans.get('ContestName', '').decode('cp866')
-        config['contest_start'] = ans.get('ContestStart', '00:00:00')
-        config['contest_duration'] = ans.get('ContestDuration', '00:00:00')
-        config['server_now'] = ans.get('ServerNow', '00:00:00')
-        session['team_name'] = ans.get('TeamName', session['team']).decode('cp866')
+    config['wtc'] = int(ans.get('WaitingCount', 0))
+    config['jury'] = ans.get('JuryMode', False)
+    config['statements'] = ans.get('StatementsLink', '')
+    config['contlist_mask'] = tswebapp.config['CONTLIST_MASK']
+    config['messages'] = re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251'))
+    config['version'] = ans.get('Version', 0)
+    config['contid'] = ans.get('ContestId', '')
+    config['contname'] = ans.get('ContestName', '').decode('cp866')
+    config['contest_start'] = ans.get('ContestStart', '00:00:00')
+    config['contest_duration'] = ans.get('ContestDuration', '00:00:00')
+    config['server_now'] = ans.get('ServerNow', '00:00:00')
+    session['team_name'] = ans.get('TeamName', session['team']).decode('cp866')
 
     return render_template("main.html", **config)
 
@@ -178,32 +155,12 @@ def sumbit(channel):
         return render_template("submit_status.html")
 
 @tswebapp.route('/monitor')
-def monitor_page():
-    if not 'team' in session:
-        return login_error()
-
-    MON = testsys.get_channel('MONITOR')
-    try:
-        MON.open(1)
-    except testsys.ConnectionFailedException:
-        return error("Cannot connect to testsys")
-
-    try:
-        id = MON.send({
-            'Team': session['team'],
-            'Password': session['password'],
-            'ContestId': session['contestid']})
-        ans = MON.recv()
-    except testsys.CommunicationException as e:
-        return error(e.message)
-    finally:
-        MON.close()
-
-    if 'Error' in ans:
-        return error(ans['Error'])
-    else:
-        config = monitor.gen_monitor(ans['History'], ans['Monitor'])
-        return render_template("monitor.html", **config)
+@decorators.login_required
+@decorators.channel_user('MONITOR')
+@decorators.channel_fetcher(auth=True)
+def monitor_page(ans, ans_id):
+   config = monitor.gen_monitor(ans['History'], ans['Monitor'])
+   return render_template("monitor.html", **config)
 
 @tswebapp.route('/contest/<id>')
 @decorators.login_required
