@@ -21,7 +21,8 @@ def channel_fetcher(request={}, auth=False):
     """
     This wrappper fetches data from testsys and calls decorated function with
     answer dict as first argument. It assumes function's first argument is
-    channel instance, as done by @channel_user decorator
+    channel instance, as done by @channel_user decorator. When auth == True,
+    it automatically fills in authentication data.
     """
     def decorator(f):
         @wraps(f)

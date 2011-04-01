@@ -1,3 +1,4 @@
+"""This module implements binary TestSys protocol"""
 
 import socket, logging, re, random, select, errno
 from flask import request
@@ -11,20 +12,25 @@ encode_regex = re.compile(r'([\x00-\x1f])')
 decode_regex = re.compile(r'\x18([\x40-\x5f])')
 
 class CommunicationException(Exception):
+    """This exception is raised when error occurs on opened socket"""
     pass
 
 class ConnectionFailedException(Exception):
+    """This exception is raised when error occurs while opening socket"""
     pass
 
-def dle_encode(s):
+def dle_encode(string):
+    """Encode *string* to TestSys binary protocol"""
     repl = lambda match: "\x18" + chr(0x40+ord(match.group(1)))
-    return encode_regex.sub(repl, str(s))
+    return encode_regex.sub(repl, str(string))
 
-def dle_decode(s):
+def dle_decode(string):
+    """Decode *string* from TestSys binary protocol"""
     repl = lambda match: chr(ord(match.group(1))-0x40)
-    return decode_regex.sub(repl, s)
+    return decode_regex.sub(repl, string)
 
 def client_triplet():
+    """Return tuple (client_string, client_ip, origin_ip)"""
     ip = request.environ.get('REMOTE_ADDR', '')
     fip = request.environ.get('HTTP_X_FORWARDED_FOR', '')
     client = 'tsweb,' + ip if ip else 'tsweb-text'
@@ -33,35 +39,41 @@ def client_triplet():
 
     return client, ip, fip
 
-def makereq(p):
+def makereq(req):
+    """Convert dictionary *request* to TestSys binary protocol string"""
     client, ip, fip = client_triplet()
 
-    l = ['', '---']
-    p['ID'] = p.get('ID', '%.9d' % random.randint(0, 1000000000))
-    p['Client'] = client
+    result = ['', '---']
+    req['ID'] = req.get('ID', '%.9d' % random.randint(0, 1000000000))
+    req['Client'] = client
     if ip:
-        p['Origin'] = fip if fip else ip
+        req['Origin'] = fip if fip else ip
 
-    for key in sorted(p):
-        l.append("{0}={1}".format(key, dle_encode(p[key])))
+    for key in sorted(req):
+        result.append("{0}={1}".format(key, dle_encode(req[key])))
 
-    l+= ['+++', '']
+    result += ['+++', '']
 
-    return '\0'.join(l)
+    return '\0'.join(result)
 
 def select_channels(timeout, write=False, *args):
+    """Run select() on sockets from *args*, which is list of :py:class:`Channel`"""
     sockets = [chan.sock for chan in args if chan.sock]
-    main.tswebapp.logger.debug("Selecting sockets for {0}: {1}".format("reading" if not write else "writing", sockets))
-    r, w, e = select.select([] if write else sockets, sockets if write else [], sockets, timeout)
-    return w if write else r
-    #TODO: Some kind of error handling here
+    main.tswebapp.logger.debug(
+        "Selecting sockets for {0}: {1}".format(
+            "reading" if not write else "writing", sockets))
+    re, wr, exc = select.select(
+        [] if write else sockets, sockets if write else [], sockets, timeout)
+    return wr if write else re
 
 def get_channel(name):
+    """Create new channel with *name*, or return existing one"""
     if name in _channels and _channels[name].sock:
         return _channels[name]
     return Channel(name)
 
 class Channel():
+    """Class, representing socket to TestSys"""
     def __init__(self, name, port=0):
         if name in _channels and _channels[name].port:
             port = _channels[name].port
@@ -83,34 +95,43 @@ class Channel():
         _channels[name] = self
 
     def open(self, nb):
+        """Open channel. *nb* specifies non-blocking mode fore socket"""
         if not self.sock:
-            main.tswebapp.logger.debug('Connecting to {0}:{1}'.format(main.tswebapp.config['TESTSYS_HOST'], self.port))
+            main.tswebapp.logger.debug(
+                "Connecting to {0}:{1}".format(
+                    main.tswebapp.config['TESTSYS_HOST'], self.port))
             self.sock = socket.socket()
             self.sock.settimeout(main.tswebapp.config['TIMEOUT'])
             try:
-                self.sock.connect((main.tswebapp.config['TESTSYS_HOST'], self.port))
+                self.sock.connect(
+                    (main.tswebapp.config['TESTSYS_HOST'], self.port))
             except socket.timeout:
                 main.tswebapp.logger.error("Connection failed: time-out")
                 raise ConnectionFailedException()
             except socket.error as e:
-                main.tswebapp.logger.error("Connection failed, {0} {1}".format(*e))
+                main.tswebapp.logger.error(
+                    "Connection failed, {0} {1}".format(*e))
                 raise ConnectionFailedException()
             self.sock.setblocking(not nb)
 
     def close(self):
+        """Close a channel"""
         if self.sock:
             try:
                 self.sock.shutdown(socket.SHUT_RDWR)
                 self.sock.close()
                 self.sock = None
             except socket.error as e:
-                main.tswebapp.logger.error("Error while closing socket, {0} {1}".format(*e))
+                main.tswebapp.logger.error(
+                    "Error while closing socket, {0} {1}".format(*e))
 
     def send(self, msg, timeout=0):
+        """Send message *msg* to socket. *msg* must be dict"""
         if not timeout:
             timeout = main.tswebapp.config['TIMEOUT']
         req = makereq(msg)
-        main.tswebapp.logger.debug("Socket: {0.sock}, port={0.port}".format(self))
+        main.tswebapp.logger.debug(
+            "Socket: {0.sock}, port={0.port}".format(self))
         main.tswebapp.logger.debug("Request: {0}".format(req))
 
         tot = 0
@@ -118,8 +139,11 @@ class Channel():
             try:
                 res = self.sock.send(req, 0)
             except IOError as e:
-                main.tswebapp.logger.error("Error sending data to socket, {0}, {1}".format(errno.errorcode[e.errno], e.strerror))
-                raise CommunicationException("Error on socket, may be TestSys is down?")
+                main.tswebapp.logger.error(
+                    "Error sending data to socket, {0}, {1}".format(
+                        errno.errorcode[e.errno], e.strerror))
+                raise CommunicationException(
+                    "Error on socket, may be TestSys is down?")
             tot = res if res < 0 else tot + res
             sockets = select_channels(timeout, True, self)
             if (not sockets) or (res <= 0 or res == len(req)):
@@ -132,11 +156,13 @@ class Channel():
         return msg['ID']
 
     def _recv(self):
+        """Internal function for recieving parts from socket"""
         try:
             buff = self.sock.recv(655360)
         except IOError as e:
             if e.errno == errno.EAGAIN:
-                main.tswebapp.logger.debug("Non-blocking operation on not ready socket")
+                main.tswebapp.logger.debug(
+                    "Non-blocking operation on not ready socket")
                 return
             else:
                 raise e
@@ -175,24 +201,29 @@ class Channel():
         return len(buff)
 
     def _read(self):
+        """Internal funciton for getting next waiting message in queue"""
         if not self.queue:
             return None
         else:
             return self.queue.pop(0)
 
     def recv(self, f=False):
+        """Recieve message from socket"""
         R = self._read()
         while not R:
-            sockets = select_channels(main.tswebapp.config['TIMEOUT'], False, self)
+            sockets = select_channels(
+                main.tswebapp.config['TIMEOUT'], False, self)
             if not sockets:
-                main.tswebapp.logger.debug('Timeout reached while receiveing from {0.sock} port {0.port}'.format(self))
+                main.tswebapp.logger.debug("Timeout reached while receiveing \
+from {0.sock} port {0.port}".format(self))
                 break
 
             if not self._recv():
                 break
 
             if self.partial:
-                main.tswebapp.logger.debug("Partially recieved {0} bytes".format(len(self.partial)))
+                main.tswebapp.logger.debug(
+                    "Partially recieved {0} bytes".format(len(self.partial)))
 
             if f and self.partial == '':
                 break
@@ -213,4 +244,5 @@ _channels = {
 }
 
 def valid_teamname(name):
+    """Check team name *name* for validity"""
     return teamname_regex.match(name) is not None
