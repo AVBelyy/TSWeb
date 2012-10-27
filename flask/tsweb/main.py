@@ -1,6 +1,5 @@
-
-import re, logging, logging.handlers
-import testsys, config, monitor
+import os, re, logging, logging.handlers
+import testsys, config, monitor, json
 from tsweb import decorators, util
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug import secure_filename
@@ -159,8 +158,12 @@ def sumbit(channel):
 @decorators.channel_user('MONITOR')
 @decorators.channel_fetcher(auth=True)
 def monitor_page(ans, ans_id):
-   config = monitor.gen_monitor(ans['History'], ans['Monitor'])
-   return render_template("monitor.html", **config)
+    try:
+        thebest = json.load(open(os.path.join(os.path.dirname(__file__), 'thebest.db')))[session['contestid']]
+    except:
+        thebest = {}
+    config = monitor.gen_monitor(ans['History'], ans['Monitor'], thebest)
+    return render_template("monitor.html", **config)
 
 @tswebapp.route('/contest/<id>')
 @decorators.login_required

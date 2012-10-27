@@ -31,8 +31,11 @@ def dle_decode(string):
 
 def client_triplet():
     """Return tuple (client_string, client_ip, origin_ip)"""
-    ip = request.environ.get('REMOTE_ADDR', '')
-    fip = request.environ.get('HTTP_X_FORWARDED_FOR', '')
+    try:
+        ip = request.environ.get('REMOTE_ADDR', '')
+        fip = request.environ.get('HTTP_X_FORWARDED_FOR', '')
+    except RuntimeError:
+        ip, fip = 0, 0
     client = 'tsweb,' + ip if ip else 'tsweb-text'
     if fip:
         client += '<-' + fip

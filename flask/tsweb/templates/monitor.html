@@ -35,10 +35,10 @@
         <tr class="{{ class }}">
             <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ team }}</td>
             <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ name }}</td>
-            {% for attempts, score, time, res, test in results[team] -%}
+            {% for attempts, score, time, res, test, best in results[team] -%}
             {%- set succ = False -%}
             {%- set out_time = True -%}
-            <td {% if res == 'OK' %}class="ok" {%- set succ = True -%}{% elif attempts %}class="wa"{% else %}class="no"{% endif %}>
+            <td {% if res == 'OK' %}class="ok{% if best %} best{% endif %}" {%- set succ = True -%}{% elif attempts %}class="wa"{% else %}class="no"{% endif %}>
                 {%- if attempts < 0 %}
                 {{ attempts }}
                 {%- elif attempts-1 > 0 and succ -%}

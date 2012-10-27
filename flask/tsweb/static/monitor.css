@@ -10,6 +10,7 @@ TR.head { background-color: #EEE }
 TR.odd { background-color: #FFB }
 TR.even { background-color: #DEF }
 TD.ok { text-align: center; color: #0A0 }
+TD.best { background: yellow }
 TD.wa { text-align: center; color: #F00 }
 TD.no { text-align: center; color: #000; font-weight: bold }
 TD.solv { text-align: center }

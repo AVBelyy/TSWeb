@@ -32,7 +32,7 @@ def parse_line(line):
         line.encode('utf-8'), match.group(1).encode('utf-8'), args))
     return match.group(1), args
 
-def gen_monitor(history, data):
+def gen_monitor(history, data, thebest):
     """Generate config suitable for monitor.html template from raw history and
     monitor data"""
     if data and not history:
@@ -171,7 +171,7 @@ def gen_monitor(history, data):
                 subs.sort(key=lambda x: x['time'])
 
                 if not subs:
-                    result = (0, 0, 0, '', 0)
+                    result = (0, 0, 0, '', 0, 0)
                 else:
                     for i, sub in enumerate(subs):
                         if sub['result'] == 'OK':
@@ -182,13 +182,14 @@ def gen_monitor(history, data):
                     attempts = len(subs)
                     #Format of result: (+-attempts, score, time, result, test number)
                     if sub['result'] == 'OK':
+                        best = thebest.get(problem, [0])[0] == team
                         result = (attempts,
                             problems[problem][1] * 60 * (attempts-1) + sub['time'],
-                            sub['time'], sub['result'], 0)
+                            sub['time'], sub['result'], 0, best)
                     else:
                         result = (-attempts,
                             problems[problem][2] * 60 * attempts, sub['time'],
-                            sub['result'], sub['test'])
+                            sub['result'], sub['test'], 0)
                     #Increase proper counters for team
                     if result[0] > 0:
                         teams[team][3] += 1 #solved counter
