@@ -2,7 +2,7 @@
     {% if not title %}{% set title = "TestSys on the Web" %}{% endif %}
     {% include "header.html" %}
     <body>
-    You are currently logged in as <b>{{ session.team }}</b>.&nbsp;&nbsp; <a href="{{ request.script_root }}/logout">Log Out</a><br />
+    Вы: <b>{{ session.team }} - {{ session.team_name }}</b>.&nbsp;&nbsp; <a href="{{ request.script_root }}/logout">Выйти</a><br />
     <hr />
     {% include "menu.html" %}
     <br /><hr />
@@ -10,9 +10,9 @@
         <span class="err">{{ error }}</span>
     {% else %}
         {% if messages %}
-        <b>Old messages:
+        <b>Сообщения:
         {% else %}
-        <b>No old messages
+        <b>Нет сообщений.
         {% endif %}
         {% if wtc %}<span class="wtp"><a href="{{ request.script_root }}/getnewmsg">{{wtc}} new messages</a> pending.</span>{% endif %}</b>
         {% if messages %}<br />{% endif %}
@@ -20,12 +20,12 @@
             {{ message }}<br />
         {% endfor %}
         <br /><hr />
-        Some useful information:<br />
-        TestSys version: {{ version }}<br />
-        Assigned contest: {{ contid }} {{ contname}}<br />
-        Contest starts at {{ contest_start }} and lasts {{ contest_duration }} minutes, current TestSys time is {{ server_now }}</br>
-        You are {{ session.team_name }}<br />
-        <br /><hr />
+        Версия TestSys: {{ version }}<br />
+        Вы решаете: {{ contid }} {{ contname}}<br />
+        Тренировка началась {{ contest_start }}, длительность {{ contest_duration }} минут, время на тестирующем сервере {{ server_now }}</br>
+
+        <h4><a href="http://dist.lokos.net:8900/webct/public/home.pl">Сервер дистанционного обучения http://dist.lokos.net:8900</a></h4>
+        <hr />
         {% include "menu.html" %}
     {% endif %}
     </body>

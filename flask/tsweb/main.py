@@ -1,4 +1,3 @@
-
 import re, logging, logging.handlers
 import testsys, config, monitor
 from tsweb import decorators, util
@@ -126,18 +125,18 @@ def sumbit(channel):
             filepath = secure_filename(request.files['file'].filename)
             filename = ''.join(filepath.split('.')[:-1])
         if request.form['solution']:
-            data = request.form['solution']
+            data = request.form['solution'].encode('cp866')
             filepath = request.form['prob'] + '.' + request.form['lang']
             filename = request.form['prob']
 
         if not data:
-            return error("No solution presented")
-        if not filepath.split('.')[-1] in extensions:
-            return error("Invalid file type")
+            return util.error("No solution presented")
+#        if not filepath.split('.')[-1] in extensions:
+#            return error("Invalid file type")
         if not request.form['prob'] in problems:
-            return error("Unknown problem '{0}'".format(request.form['prob']))
-        if not request.form['lang'] in extensions:
-            return error("Unknown compiler '{0}'".format(request.form['lang']))
+            return util.error("Unknown problem '{0}'".format(request.form['prob']))
+        if not compilers[int(request.form.get('lang', '0')) - 1][0] in extensions:
+            return util.error("Unknown compiler '{0}'".format(request.form['lang']))
 
         state, answer = util.communicate(channel, {
             'Team': session['team'],
@@ -146,8 +145,8 @@ def sumbit(channel):
             'Problem': request.form['prob'],
             'Contents': data,
             'Source': filename,
-            'Compiler': extensions[request.form['lang']],
-            'Extension': request.form['lang']})
+            'Compiler': compilers[int(request.form['lang']) - 1][1],
+            'Extension': compilers[int(request.form['lang']) - 1][0]})
 
         if state == 'error':
             return answer
@@ -161,6 +160,14 @@ def sumbit(channel):
 def monitor_page(ans, ans_id):
    config = monitor.gen_monitor(ans['History'], ans['Monitor'])
    return render_template("monitor.html", **config)
+
+@tswebapp.route('/list')
+@decorators.login_required
+@decorators.channel_user('MONITOR')
+@decorators.channel_fetcher(auth=True)
+def monitor_page(ans, ans_id):
+   config = monitor.gen_monitor(ans['History'], ans['Monitor'])
+   return render_template("list.html", **config)
 
 @tswebapp.route('/contest/<id>')
 @decorators.login_required
@@ -258,6 +265,10 @@ def feedback(channel, id):
 
     answer, ans_id = answer
 
+    print "DENIS>>>"
+    print answer
+    print "<<<DENIS"
+
     return render_template("feedback.html", hdr=answer['FeedbackAddHeader'], feedback=answer['Feedback'].decode('cp1251'), id=id)
 
 @tswebapp.route('/contests')
@@ -314,7 +325,7 @@ def getnewmsg(channel):
         wtc = 0
         id = answer['ID']
 
-    return render_template("getnewmsg.html", message=answer['Message'], id=id)
+    return render_template("getnewmsg.html", message=answer['Message'].decode('cp1251'), id=id)
 
 @tswebapp.route('/clars')
 @decorators.login_required

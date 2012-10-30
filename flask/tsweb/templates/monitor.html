@@ -1,8 +1,11 @@
 <html>
-    {% set title = "Contest Monitor" %}
+    {% set title = "Рейтинг" %}
     {% set extcss = "monitor.css" %}
     {% include "header.html" %}
     <body class="monit">
+
+    {% include "menu.html" %}
+
     {% if error %}
     <span class="errm">{{ error }}
     {% else %}
@@ -12,29 +15,29 @@
         </pre>
         {% else %}
         <h1>{{ contest }}</h1>
-        Started at: <b>{{ startat }}</b><br />
-        Duration: <b>{{ '%d:%02d' % (contlen/60, contlen%60) }}</b><br />
-        State: <b>{{ state }} {{ '%.0f' % (now/60) }}/{{ contlen }}</b><br />
-        Last success: {{ last_success.htime }}, team <b>{{ last_success.team }}</b> &mdash; <b>{{ last_success.team_name }}</b>, problem <b>{{ last_success.problem }}</b><br />
-        Last submission: {{ last_submission.htime }}, team <b>{{ last_submission.team }}</b> &mdash; <b>{{ last_submission.team_name }}</b>, problem <b>{{ last_submission.problem }}</b><br />
-        <a href="{{ request.script_root }}/index">Back to main page</a>
+        Начало: <b>{{ startat }}</b> &nbsp; &nbsp; &nbsp;
+        Длительность: <b>{{ '%d:%02d' % (contlen/60, contlen%60) }}</b><br />
+        Состояние: <b>{{ state }} {{ '%.0f' % (now/60) }}/{{ contlen }}</b><br />
+        Последний успех: {{ last_success.htime }}, <b>{{ last_success.team }}</b> &mdash; <b>{{ last_success.team_name }}</b>, задача <b>{{ last_success.problem }}</b><br />
+        Последняя отправка: {{ last_submission.htime }}, <b>{{ last_submission.team }}</b> &mdash; <b>{{ last_submission.team_name }}</b>, задача <b>{{ last_submission.problem }}</b><br />
+
         <table border="1" cellpadding="4" class="mtab">
         <tr class="head">
             <th>ID</th>
-            <th>Team</th>
+            <th>Участники</th>
             {%- for problem in problem_list %}
             <th width="35">{{ problem }}</th>
             {%- endfor %}
             <th width="25">=</th>
-            <th>Time</th>
-            <th>Rank</th>
+            <th>Время</th>
+            <th>Рейтинг</th>
         </tr>
         {%- for rank, list in teams_list|groupby(4)|reverse -%}
         {% set class = loop.cycle('even', 'odd') %}
         {%- for team, mclass, set, name, solved, score, rank in list %}
         <tr class="{{ class }}">
             <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ team }}</td>
-            <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ name }}</td>
+            <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ name }} </td>
             {% for attempts, score, time, res, test in results[team] -%}
             {%- set succ = False -%}
             {%- set out_time = True -%}
@@ -60,9 +63,9 @@
         {% if class == 'even' %}{% set class = 'odd' %}{% else %}{% set class = 'even' %}{% endif %}
             <tr class="{{ class }}">
             <td>&nbsp;</td>
-            <td class="no">Submits</td>
+            <td class="no">Отправлено решений</td>
             {%- for problem in problem_list|sort -%}
-            <td class="no">{% if accepts[problem]+rejects[problem] %}{{ accepts[problem]+rejects[problem] }}{% endif %}</td>
+            <td class="no">{% if accepts[problem]+rejects[problem] %}{{ accepts[problem]+rejects[problem] }}{% else %}&nbsp;{% endif %}</td>
             {%- endfor -%}
             <td class="no">{{ total_accepts+total_rejects }}</td>
             <td>&nbsp;</td>
@@ -70,31 +73,57 @@
             </tr>
             <tr class="{{ class }}">
             <td>&nbsp;</td>
-            <td class="ok">Accepted</td>
+            <td class="ok">Принято - accepted</td>
             {%- for problem in problem_list|sort -%}
-            <td class="ok">{% if accepts[problem] %}{{ accepts[problem] }}{% endif %}</td>
+            <td class="ok">{% if accepts[problem] %}{{ accepts[problem] }}<br>
+              {{ "%0.0lf" % ((accepts[problem]*100.0) / (accepts[problem]+rejects[problem])) }}%                  
+            {% else %} &nbsp;{% endif %}</td>
             {%- endfor -%}
-            <td class="ok">{{ total_accepts }}</td>
+            <td class="ok">{{ total_accepts }}<br>
+            {{ "%0.0lf" % ((total_accepts*100.0) / (total_accepts+total_rejects)) }}%</td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
             </tr>
             <tr class="{{ class }}">
             <td>&nbsp;</td>
-            <td class="wa">Rejected</td>
+            <td class="wa">Отклонено - rejected</td>
             {%- for problem in problem_list|sort -%}
-            <td class="wa">{% if rejects[problem] %}{{ rejects[problem] }}{% endif %}</td>
+            <td class="wa">{% if rejects[problem] %}{{ rejects[problem] }}<br>
+              {{ "%0.0lf" % ((rejects[problem]*100.0) / (accepts[problem]+rejects[problem])) }}%                  
+            {% else %}&nbsp; 
+            {% endif %}</td>
             {%- endfor -%}
-            <td class="wa">{{ total_rejects }}</td>
+            <td class="wa">{{ total_rejects }}<br>
+            {{ "%0.0lf" % ((total_rejects*100.0) / (total_accepts+total_rejects)) }}%</td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
             </tr>
         {% endif -%}
         {%- endfor %}
         </table>
-        <a href="{{ request.script_root }}/index">Back to main page</a>
         {% endif %}
     {% endif %}
+
     </body>
+
+    <h3>Список группы:</h3>
+    <ol>
+    {%- for rank, list in teams_list|groupby(4)|reverse -%}
+    {% set active = False %}
+    {%- for team, mclass, set, name, solved, score, rank in list -%}
+
+    {%- set active = False -%}
+    {%- for attempts, score, time, res, test in results[team] -%}
+    {%- if res!='' -%}
+    {%- set active = True -%}
+    {%- endif -%}
+    {%- endfor %}
+    {% if solved > 0%}
+    <li>{{ name|safe }}</li>
+    {% endif %}
+    {%- endfor %}
+    {%- endfor %}
+    </ol>
 </html>
 
 <!-- vim:ft=htmldjango

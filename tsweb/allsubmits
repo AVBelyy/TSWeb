@@ -111,8 +111,10 @@ sub output_table {
 #      $a = win2koi ($a);
       $idoptions = "?id=$id";
       $idoptions .= "&all=1" if $all;
-      $cause = &b_encode (dos2win ($cause)) if $cause;
-      $cause = "<A HREF=$cgiroot/allsubmits$idoptions>View CE report</A>" if $res eq 'CE' and $submid < 0;
+#      $cause = &b_encode (dos2win ($cause)) if $cause;
+#      $cause = "<A HREF=$cgiroot/allsubmits$idoptions>View CE report</A>" if $res eq 'CE' and $submid < 0;
+      $cause = "<A HREF=$cgiroot/allsubmits$idoptions>View CE report</A>" if $res eq 'CE';
+      $cause = &b_encode (dos2koi ($cause)) if $res ne 'CE';
       $cause = "&nbsp;" if $cause eq '';
       $id = "&nbsp;" if $id eq '';
       $pr = "&nbsp;" if $pr eq '';
