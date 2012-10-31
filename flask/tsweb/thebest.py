@@ -53,7 +53,7 @@ class TheBest():
             Result = answer.get("SubmRes_"+str(x), "")
             if Result == "OK":
                 if Problem in Max:
-                    if TL <= Max[Problem][1] and ML < Max[Problem][2]:
+                    if (TL < Max[Problem][1]) or (TL == Max[Problem][1] and ML < Max[Problem][2]):
                         Max[Problem] = [Team, TL, ML]
                 else:
                     Max[Problem] = [Team, TL, ML]
