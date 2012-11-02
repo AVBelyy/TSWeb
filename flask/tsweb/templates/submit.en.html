@@ -1,12 +1,11 @@
 <html>
-    {% set title = "Отправить решение" %}
+    {% set title = "Testsys submit" %}
     {% include "header.html" %}
     <body>
-    {% include "menu.html" %}
     <form action="{{ request.script_root }}/submit" enctype="multipart/form-data" method="post" class="frm"> 
     <table align="center" cellpadding="2" cellspacing="3">
         <tr class="od">
-            <td>Задача:<br/><i>Выберите задачу</i></td>
+            <td>Problem:<br/><i>Choose here the problem id</i></td>
             <td>
                 <select name="prob">
                 {% for problem in problems %}
@@ -16,7 +15,7 @@
             </td>
         </tr>
         <tr class="ev">
-            <td>Язык программирования:<br /><i>Выберите компилятор/интерпретатор</i></td>
+            <td>Language:<br /><i>Choose one of the compilers</i></td>
             <td>
                 <select name="lang">
                 {% set i = 0 %}
@@ -28,21 +27,29 @@
             </td>
         </tr>
         <tr class="od">
-            <td>Решение:<br /><i>Загрузите ваше решение...</i></td>
+            <td>Solution:<br /><i>Attach here your solution</i></td>
             <td>
                 <input class="sm" size="32" type="file" name="file"</input>
             </td>
         </tr>
         <tr class="ev">
-            <td>Текст решения:<br /><i>...или вставьте его сюда</i></td>
-            <td><textarea name="solution" cols="100" rows="35" wrap="virtual"></textarea></td>
+            <td>Solution text:<br /><i>... or paste it here</i></td>
+            <td><textarea name="solution" cols="80" rows="25" wrap="virtual"></textarea></td>
         </tr>
         <tr>
             <td>&nbsp;</td>
             <td>
-                <input class="submb" type="submit" value="Отправить на проверку">
+                <input class="submb" type="submit" value="Submit">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <a href="{{ url_for('index') }}">Back to main page</a>
             </td>
         </tr>
     </table>
     </body>
 </html>
+
+<!-- vim: ft=htmldjango
+--!>

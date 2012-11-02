@@ -1,0 +1,18 @@
+<html>
+{% set title = "New messages" %}
+{% include "header.html" %}
+<body>
+    {% include "menu.html" %}
+    <h1>New messages</h1>
+    {% if not message %}
+    Sorry, no new messages<br /><br />
+    <a href="{{ request.script_root }}/index">Main page</a>
+    {% else %}
+    <span class="newmsg">{{ message }}</span><br /><br />
+    Click <a href="{{ request.script_root }}/getnewmsg?confirm={{ id }}">HERE</a> to confirm</a>
+    {% endif %}
+</body>
+</html>
+
+{# vim: ft=htmldjango
+#}

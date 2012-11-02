@@ -1,22 +1,23 @@
 <html>
-    {% set title = "Все решения" %}
+    {% set title = "Submits list" %}
     {% include "header.html" %}
     <body>
-        {% include "menu.html" %}
+        <h1>Submits list</h1>
+        <p style="clear: both;"><a href="{{ request.script_root }}/index">Back to main page</a></p>
         <p>
         <table border="1" align="left" cellpadding="2" cellspacing="3">
         <tr>
             <th>ID</th>
-            <th>Задача</th>
-            <th>Попытка</th>
-            <th>Время</th>
-            <th>Компилятор</th>
-            <th>Результат</th>
-            <th>Тест</th>
-            {% if tl %}<th>Макс. время</th>{% endif -%}
-            {% if ml %}<th>Макс. память</th>{% endif -%}
-            <th>Код</th>
-            {% if team %}<th>Комментарий</th>{% else %}<th>CE Cause</th>{% endif -%}
+            <th>Problem</th>
+            <th>Attempt</th>
+            <th>Time</th>
+            <th>Compiler</th>
+            <th>Result</th>
+            <th>TestN</th>
+            {% if tl %}<th>MaxTime</th>{% endif -%}
+            {% if ml %}<th>MaxMem</th>{% endif -%}
+            <th>Text</th>
+            {% if team %}<th>Comment</th>{% else %}<th>CE Cause</th>{% endif -%}
             {% if feed %}<th>Feedback</th>{% endif -%}
             {% if token %}<th>Use Token</th>{% endif -%}
             {% if score %}<th>Score</th>{% endif -%}
@@ -44,16 +45,20 @@
             <td>{{ sub['Test'] }}</td>
             {% if tl %}<td>{{ sub['TL']|d('&nbsp;') }}</td>{% endif %}
             {% if ml %}<td>{{ sub['ML']|d('&nbsp;') }}</td>{% endif %}
-            <td><a target="_blank" href="{{ request.script_root }}/allsubmits/view/{{ sub['ID'] }}">Открыть</a></td>
+            <td><a href="{{ request.script_root }}/allsubmits/view/{{ sub['ID'] }}">View</a></td>
             <td>
                 <pre>{{ sub['CE']}}</pre>
             </td>
-            {% if feed %}<td>{% if sub['Feedback'] %}<a href="{{ request.script_root }}/allsubmits/feedback/{{ sub['ID'] }}">Открыть</a>{% else %}&nbsp;{% endif %}</td>{% endif %}
+            {% if feed %}<td>{% if sub['Feedback'] %}<a href="{{ request.script_root }}/allsubmits/feedback/{{ sub['ID'] }}">View</a>{% else %}&nbsp;{% endif %}</td>{% endif %}
             {% if score %}<td>{{ sub['Score']|d('&nbsp;') }}</td>{% endif -%}
             {% if team %}<td>{{ sub['Team']|d('&nbsp;') }}</td>{% endif -%}
         </tr>
         {%- endfor %}
         </table>
         </p>
+        <p style="clear:both;"><a href="{{ request.script_root }}/index">Back to main page</a></p>
     </body>
 </html>
+
+{# vim: ft=htmldjango
+#}

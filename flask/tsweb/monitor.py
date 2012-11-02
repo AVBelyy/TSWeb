@@ -116,7 +116,13 @@ def gen_monitor(history, data):
             t, team = commands.pop(0)
             if t != 't':
                 raise ParsingError("Insufficient team count")
+
             id, monclass, monset, name = team
+
+            # remove double quotes from name (if needed)
+            if name.startswith('"') and name.endswith('"'):
+               name = name[1:-1]
+
             if not problem_id_regex.match(id):
                 tsweb.main.tswebapp.logger.error(
                     "Bad team id: '{0}'".format(id))
@@ -158,8 +164,10 @@ def gen_monitor(history, data):
         accepted_counters = dict(zip(problems.keys(), [0]*len(problems)))
         rejected_counters =  dict(zip(problems.keys(), [0]*len(problems)))
 
+        active_teams = []
         for team in teams:
             results = []
+            active_team = False
             for problem in sorted(problems):
                 #Get submissions of current problem by current team
                 subs = filter(
@@ -199,7 +207,13 @@ def gen_monitor(history, data):
                         rejected_counters[problem] += attempts
                     teams[team][4] += result[1] #scores counter
                 results.append(result)
-            TeamsResults[team] = results
+                if result != (0, 0, 0, '', 0):
+                    active_team = True
+            if active_team:
+                TeamsResults[team] = results
+                active_teams.append((team, teams[team][2]))
+
+        active_teams.sort(key = lambda x: x[1])
 
         #Sort teams by id (third key)
         teams_order = sorted(teams)
@@ -216,10 +230,12 @@ def gen_monitor(history, data):
             #otherwise it'll be same
             if teams[team][3]:
                 rank += 1
+                #active_teams.append((team, teams[team][2]))
 
         config['teams_list'] = [((i,)+tuple(teams[i])) for i in teams_order]
+        config['active_teams'] = active_teams
         config['results'] = TeamsResults
-        config['problem_list'] = sorted(problems)
+        config['problem_list'] = (problems)
         config['accepts'] = accepted_counters
         config['rejects'] = rejected_counters
         config['total_accepts'] = reduce(
@@ -227,11 +243,19 @@ def gen_monitor(history, data):
         config['total_rejects'] = reduce(
             lambda x,y: x+y, [rejected_counters[i] for i in rejected_counters])
 
-        config['last_success'] = filter(
-            lambda x: True if x['result'] == 'OK' or x['result'] == 'OC' else False,
-            sorted(submissions, key=lambda x: x['time'], reverse=1))[0]
-        config['last_submission'] = sorted(submissions,
-            key=lambda x: x['time'], reverse=1)[0]
+        if len(submissions) > 0:
+            succ = filter(
+                lambda x: True if x['result'] == 'OK' or x['result'] == 'OC' else False,
+                sorted(submissions, key=lambda y: y['time'], reverse=1))
+            if succ==[]:
+               config['last_success'] = None
+            else:
+               config['last_success'] = succ[0]
+            config['last_submission'] = sorted(submissions,
+	            key=lambda x: x['time'], reverse=1)[0]
+        else:
+	        config['last_success'] = None
+	        config['last_submission'] = None
     except ParsingError as e:
         config = {'error': e.message}
     return config

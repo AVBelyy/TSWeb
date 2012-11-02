@@ -1,11 +1,11 @@
 <html>
     {% if not title %}{% set title = "TestSys on the Web" %}{% endif %}
+    {% set index = True %}
     {% include "header.html" %}
     <body>
-    Вы: <b>{{ session.team }} - {{ session.team_name }}</b>.&nbsp;&nbsp; <a href="{{ request.script_root }}/logout">Выйти</a><br />
-    <hr />
     {% include "menu.html" %}
-    <br /><hr />
+    Вы: <b>{{ session.team }} - {{ session.team_name }}</b>.&nbsp;&nbsp;<a href="{{ request.script_root }}/logout">Выйти</a><br />
+    <hr />
     {% if error %}
         <span class="err">{{ error }}</span>
     {% else %}
@@ -14,22 +14,17 @@
         {% else %}
         <b>Нет сообщений.
         {% endif %}
-        {% if wtc %}<span class="wtp"><a href="{{ request.script_root }}/getnewmsg">{{wtc}} new messages</a> pending.</span>{% endif %}</b>
-        {% if messages %}<br />{% endif %}
+        {% if wtc %}<span class="wtp"><a href="{{ request.script_root }}/getnewmsg">{{wtc}} непрочитанн{% if wtc > 1 %}ых{% else %}ое{% endif %}</a>.</span>{% endif %}</b>
         {% for message in messages %}
-            {{ message }}<br />
+           <br /> {{ message }}
         {% endfor %}
-        <br /><hr />
+        <hr />
         Версия TestSys: {{ version }}<br />
         Вы решаете: {{ contid }} {{ contname}}<br />
         Тренировка началась {{ contest_start }}, длительность {{ contest_duration }} минут, время на тестирующем сервере {{ server_now }}</br>
 
-        <h4><a href="http://dist.lokos.net:8900/webct/public/home.pl">Сервер дистанционного обучения http://dist.lokos.net:8900</a></h4>
+        <h4><a target="_blank" href="http://dist.lokos.net:8900/webct/public/home.pl">Сервер дистанционного обучения http://dist.lokos.net:8900</a></h4>
         <hr />
-        {% include "menu.html" %}
     {% endif %}
     </body>
 </html>
-
-<!-- vim: ft=htmldjango
---!>

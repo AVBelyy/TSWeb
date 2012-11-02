@@ -23,7 +23,7 @@ def index():
 def logout():
     tm = ', {0}'.format(session['team']) if 'team' in session else ''
     session.pop('team', None)
-    return util.redirector(url_for('index'), text="Thanks for logging out{0}!".format(tm))
+    return redirect(url_for('index'))
 
 @tswebapp.route('/login', methods=['POST'])
 def login():
@@ -50,7 +50,7 @@ def login():
     session['contestid'] = answer.get('ContestId', '')
     session['team_name'] = answer.get('TeamName', '').decode('cp866')
 
-    return util.redirector(url_for('index'), text="Thank you for logging in, {0}!".format(session['team']))
+    return redirect(url_for('index'))
 
 @decorators.channel_user('MSG')
 @decorators.channel_fetcher({
@@ -161,14 +161,6 @@ def monitor_page(ans, ans_id):
    config = monitor.gen_monitor(ans['History'], ans['Monitor'])
    return render_template("monitor.html", **config)
 
-@tswebapp.route('/list')
-@decorators.login_required
-@decorators.channel_user('MONITOR')
-@decorators.channel_fetcher(auth=True)
-def monitor_page(ans, ans_id):
-   config = monitor.gen_monitor(ans['History'], ans['Monitor'])
-   return render_template("list.html", **config)
-
 @tswebapp.route('/contest/<id>')
 @decorators.login_required
 def changecontest(id):
@@ -265,10 +257,6 @@ def feedback(channel, id):
 
     answer, ans_id = answer
 
-    print "DENIS>>>"
-    print answer
-    print "<<<DENIS"
-
     return render_template("feedback.html", hdr=answer['FeedbackAddHeader'], feedback=answer['Feedback'].decode('cp1251'), id=id)
 
 @tswebapp.route('/contests')
@@ -364,4 +352,4 @@ def submit_clar(channel):
     return render_template("clar_status.html")
 
 if __name__ == "__main__":
-    tswebapp.run()
+    tswebapp.run(host='0.0.0.0')

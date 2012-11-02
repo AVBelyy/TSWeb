@@ -1,11 +1,9 @@
 <html>
-    {% set title = "New messages" %}
+    {% set title = "Новые сообщения" %}
     {% include "header.html" %}
     <body>
-        Confirmation sent. {% if wtc %}<a href="{{ request.script_root }}/getnewmsg">{{ wtc }} more pending messages</a>reported.{% endif %}<br /><br />
-        <a href="{{ request.script_root }}/index">Main page</a>
+        Сообщение прочитано.
+        {% if wtc %}<a href="{{ request.script_root }}/getnewmsg"> Осталось еще {{ wtc }} сообщени{% if wtc > 1 %}й{% else %}е{% endif %}.</a>{% endif %}<br /><br />
+        <a href="{{ request.script_root }}/index">На главную</a>
     </body>
 </html>
-
-{# vim: ft=htmldjango
-#}

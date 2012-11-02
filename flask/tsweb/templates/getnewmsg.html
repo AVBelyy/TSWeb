@@ -1,17 +1,14 @@
 <html>
-{% set title = "New messages" %}
+{% set title = "Новые сообщения" %}
 {% include "header.html" %}
 <body>
-    <h1>New messages</h1>
+    {% include "menu.html" %}
+    <h1>Новые сообщения</h1>
     {% if not message %}
-    Sorry, no new messages<br /><br />
-    <a href="{{ request.script_root }}/index">Main page</a>
+    Нет новых сообщений.<br /><br />
     {% else %}
     <span class="newmsg">{{ message }}</span><br /><br />
-    Click <a href="{{ request.script_root }}/getnewmsg?confirm={{ id }}">HERE</a> to confirm</a>
+    <a href="{{ request.script_root }}/getnewmsg?confirm={{ id }}">Нажмите сюда для подтверждения</a></a>
     {% endif %}
 </body>
 </html>
-
-{# vim: ft=htmldjango
-#}

@@ -1,9 +1,11 @@
 <html>
-    {% set title = "Clarification Request Status" %}
+    {% set title = "TestSys - статус вопросов" %}
     {% include "header.html" %}
     <body>
-        Your clarification request has been acknowledged! Good luck!<br /><hr />
-        <a href="{{ request.script_root }}/clars">Submit another clarification request</a>&nbsp;&nbsp;
-        <a href="{{ request.script_root }}/index">Main page</a>
+        {% include "menu.html" %}
+
+        Ваш вопрос отправлен! Решайте задачи дальше! Жюри ответит когда будет время!<br /><hr />
+        <a href="{{ request.script_root }}/clars">Отправить ещё один вопрос</a>&nbsp;&nbsp;
+        <a href="{{ request.script_root }}/index">На главную</a>
     </body>
 </html>

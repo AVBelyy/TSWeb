@@ -3,7 +3,9 @@
     {% set extcss = "monitor.css" %}
     {% include "header.html" %}
     <body class="monit">
+
     {% include "menu.html" %}
+
     {% if error %}
     <span class="errm">{{ error }}
     {% else %}
@@ -16,13 +18,8 @@
         Начало: <b>{{ startat }}</b> &nbsp; &nbsp; &nbsp;
         Длительность: <b>{{ '%d:%02d' % (contlen/60, contlen%60) }}</b><br />
         Состояние: <b>{{ state }} {{ '%.0f' % (now/60) }}/{{ contlen }}</b><br />
-        {%- if last_success -%}
         Последний успех: {{ last_success.htime }}, <b>{{ last_success.team }}</b> &mdash; <b>{{ last_success.team_name }}</b>, задача <b>{{ last_success.problem }}</b><br />
-        {%- endif -%}
-        {%- if last_submission -%}
         Последняя отправка: {{ last_submission.htime }}, <b>{{ last_submission.team }}</b> &mdash; <b>{{ last_submission.team_name }}</b>, задача <b>{{ last_submission.problem }}</b><br />
-		{%- endif -%}
-		<br>
 
         <table border="1" cellpadding="4" class="mtab">
         <tr class="head">
@@ -38,10 +35,9 @@
         {%- for rank, list in teams_list|groupby(4)|reverse -%}
         {% set class = loop.cycle('even', 'odd') %}
         {%- for team, mclass, set, name, solved, score, rank in list %}
-        {%- if results[team] %}
         <tr class="{{ class }}">
             <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ team }}</td>
-            <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ name }} </td>
+            <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ name }}</td>
             {% for attempts, score, time, res, test in results[team] -%}
             {%- set succ = False -%}
             {%- set out_time = True -%}
@@ -62,13 +58,12 @@
             <td class="solv">{{ solved }}</td>
             <td class="pen">{{ score // 60 }}</td>
             <td class="rk">{{ rank }}</td>
-        {%- endif %}
         {%- endfor %}
         {%- if loop.last -%}
         {% if class == 'even' %}{% set class = 'odd' %}{% else %}{% set class = 'even' %}{% endif %}
             <tr class="{{ class }}">
             <td>&nbsp;</td>
-            <td class="no">Отправлено решений</td>
+            <td class="no">Отправлено решений на проверку</td>
             {%- for problem in problem_list|sort -%}
             <td class="no">{% if accepts[problem]+rejects[problem] %}{{ accepts[problem]+rejects[problem] }}{% else %}&nbsp;{% endif %}</td>
             {%- endfor -%}
@@ -78,28 +73,26 @@
             </tr>
             <tr class="{{ class }}">
             <td>&nbsp;</td>
-            <td class="ok">Принято - accepted</td>
+            <td class="ok">Принято</td>
             {%- for problem in problem_list|sort -%}
             <td class="ok">{% if accepts[problem] %}{{ accepts[problem] }}<br>
               {{ "%0.0lf" % ((accepts[problem]*100.0) / (accepts[problem]+rejects[problem])) }}%                  
             {% else %} &nbsp;{% endif %}</td>
             {%- endfor -%}
-            <td class="ok">{{ total_accepts }}<br>
-            {{ "%0.0lf" % ((total_accepts*100.0) / (total_accepts+total_rejects)) }}%</td>
+            <td class="ok">{{ total_accepts }}<br>{{ "%0.0lf" % ((total_accepts*100.0) / (total_accepts+total_rejects)) }}%</td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
             </tr>
             <tr class="{{ class }}">
             <td>&nbsp;</td>
-            <td class="wa">Отклонено - rejected</td>
+            <td class="wa">Отклонено</td>
             {%- for problem in problem_list|sort -%}
             <td class="wa">{% if rejects[problem] %}{{ rejects[problem] }}<br>
               {{ "%0.0lf" % ((rejects[problem]*100.0) / (accepts[problem]+rejects[problem])) }}%                  
             {% else %}&nbsp; 
             {% endif %}</td>
             {%- endfor -%}
-            <td class="wa">{{ total_rejects }}<br>
-            {{ "%0.0lf" % ((total_rejects*100.0) / (total_accepts+total_rejects)) }}%</td>
+            <td class="wa">{{ total_rejects }}</td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
             </tr>
@@ -109,12 +102,6 @@
         {% endif %}
     {% endif %}
 
-    <h3>Список группы:</h3>
-    <ol>
-    {%- for team, name in active_teams -%}
-        <li><!--{{ team }} &mdash;-->{{ name }}</li>
-    {%- endfor -%}
-    </ol>
     </body>
 </html>
 

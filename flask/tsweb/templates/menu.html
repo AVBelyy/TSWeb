@@ -1,11 +1,13 @@
-<a href="{{ request.script_root }}/submit">Отправить решение</a>&nbsp;&nbsp;
-<a href="{{ request.script_root }}/monitor">Рейтинг</a>&nbsp;&nbsp;
-<a href="{{ request.script_root }}/clars">Вопросы</a>&nbsp;&nbsp;
+<!-- menu.html -->
+{%- if not index|d(False) -%}
+<a href="{{ request.script_root }}/index">Главная страница</a>&nbsp;|&nbsp;
+{%- endif -%}
+<a href="{{ request.script_root }}/submit">Отправить решение</a>&nbsp;|&nbsp;
+<a href="{{ request.script_root }}/monitor">Рейтинг</a>&nbsp;|&nbsp;
+<a href="{{ request.script_root }}/clars">Вопросы</a>&nbsp;|&nbsp;
 <a href="{{ request.script_root }}/allsubmits">Отправки</a>
-{% if statements %}&nbsp;&nbsp;<a href="{{ statements }}">Условия задач</a>{% endif %}
-{% if printsol %}&nbsp;&nbsp;<a href="{{ request.script_root }}/printsol">Print solution</a>{% endif %}
-{% if contlist_mask %}&nbsp;&nbsp;<a href="{{ request.script_root }}/contests?mask={{contlist_mask}}">Все тренировки</a>{% endif %}
-{% if jury %}&nbsp;&nbsp;<a href="{{ request.script_root }}/allsubmits?all=1">Все отправки</a>{% endif %}
-
-<!-- vim: ft=htmldjango
---!>
+{% if statements %}&nbsp;|&nbsp;<a href="{{ statements }}">Условия задач</a>{% endif %}
+{% if printsol %}&nbsp;|&nbsp;<a href="{{ request.script_root }}/printsol">Print solution</a>{% endif %}
+{% if contlist_mask %}&nbsp;|&nbsp;<a href="{{ request.script_root }}/contests?mask={{contlist_mask}}">Все тренировки</a>{% endif %}
+{% if jury %}&nbsp;|&nbsp;<a href="{{ request.script_root }}/allsubmits?all=1">Все отправки</a>{% endif %}
+<hr>

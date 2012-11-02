@@ -1,8 +1,8 @@
-.rok	{ color: Green }	
-.rwa	{ color: Red }
-.rft	{ color: Orange; font-weight: bold }
+.rok    { color: Green }
+.rwa    { color: Red }
+.rft    { color: Orange; font-weight: bold }
 .gremph { color: Green; font-style: italic }
-.green	{ color: Green; }
+.green  { color: Green; }
 PRE.cmt { font-size: 9pt; }
 /* TR { font-size: 12pt } */
 /* H2 { text-align: center } */

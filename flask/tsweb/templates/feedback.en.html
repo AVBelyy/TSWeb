@@ -1,13 +1,12 @@
 <html>
-    {% set title = "Результат тестирования #%s" % id %}
+    {% set title = "Feedback for submission %s" % id %}
     {% include "header.html" %}
     <body class="subm">
-        {% include "menu.html" %}
         <h1>{{ title }}</h1>
         <table border="1" align="left" cellpadding="2" cellspacing="3">
         <tr>
-            <td>Тест</td>
-            <td>Результат</td>
+            <td>Test</td>
+            <td>Result</td>
             {{ hdr|safe }}
         </tr>
         {{ feedback|safe }}

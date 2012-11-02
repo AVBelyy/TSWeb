@@ -1,18 +1,17 @@
 <html>
-    {% set title = "Все тренировки" %}
+    {% set title = "List of contests" %}
     {% include "header.html" %}
     <body>
-        {% include "menu.html" %}
         <h1>{{ title }}</h1>
         <table border="1" cellpadding="2" cellspacing="3">
         <tr class="head">
-            <th>ID тренировки<br />
-            <small>Выбрать</small></th>
-            <th>Условия задач<br />
-            <small>СсылкаНажмите, чтобы скачать или открыть условия</small></td>
-            <th>Состояние</th>
-            <th>Начало в</th>
-            <th>Участников</th>
+            <th>Contest ID<br />
+            <small>Click to enter</small></th>
+            <th>Contest Name<br />
+            <small>Click to read statements</small></td>
+            <th>State</th>
+            <th>Started at</th>
+            <th>Teams count</th>
         </tr>
         {%- for contest in contests %}
         <tr>
@@ -24,5 +23,9 @@
         </tr>
         {%- endfor %}
         </table>
+        <a href="{{ request.script_root }}/index">Back to main page</a>
     </body>
 </html>
+
+{# vim: ft=htmldjango
+#}
