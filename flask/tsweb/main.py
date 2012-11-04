@@ -5,11 +5,34 @@ from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug import secure_filename
 
 tswebapp = Flask(__name__)
-tswebapp.secret_key = '123asd'
 tswebapp.config.from_object(config)
 tswebapp.logger.setLevel(tswebapp.config['LOG_LEVEL'])
-tswebapp.logger.addHandler(logging.handlers.RotatingFileHandler(
-              tswebapp.config['LOG_FILENAME'], maxBytes=2**20, backupCount=5))
+fileFormatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+fileHandler = logging.handlers.RotatingFileHandler(
+    tswebapp.config['LOG_FILENAME'], maxBytes=2**20, backupCount=5)
+fileHandler.setFormatter(fileFormatter)
+tswebapp.logger.addHandler(fileHandler)
+
+if tswebapp.config['LOG_TO_EMAIL']:
+    smtpFormatter = logging.Formatter('''
+    Message type:       %(levelname)s
+    Location:           %(pathname)s:%(lineno)d
+    Module:             %(module)s
+    Function:           %(funcName)s
+    Time:               %(asctime)s
+
+    Message:
+
+    %(message)s
+    ''')
+    smtpHandler = logging.handlers.SMTPHandler((tswebapp.config['SMTP_SERVER'], tswebapp.config['SMTP_PORT']),
+                                                tswebapp.config['EMAIL_FROM'],
+                                                tswebapp.config['LOG_EMAILS'],
+                                                'TSWeb log',
+                                                (tswebapp.config['EMAIL_FROM'], tswebapp.config['EMAIL_PASSWORD']),
+                                                tuple())
+    smtpHandler.setFormatter(smtpFormatter)
+    tswebapp.logger.addHandler(smtpHandler)
 
 @tswebapp.route('/')
 @tswebapp.route('/index')
