@@ -23,7 +23,7 @@ def index():
 def logout():
     tm = ', {0}'.format(session['team']) if 'team' in session else ''
     session.pop('team', None)
-    return redirect(url_for('index'))
+    return util.redirector(url_for('index'), text="Thanks for logging out{0}!".format(tm))
 
 @tswebapp.route('/login', methods=['POST'])
 def login():
@@ -50,7 +50,7 @@ def login():
     session['contestid'] = answer.get('ContestId', '')
     session['team_name'] = answer.get('TeamName', '').decode('cp866')
 
-    return redirect(url_for('index'))
+    return util.redirector(url_for('index'), text="Thank you for logging in, {0}!".format(session['team']))
 
 @decorators.channel_user('MSG')
 @decorators.channel_fetcher({
