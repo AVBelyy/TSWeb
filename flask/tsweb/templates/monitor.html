@@ -84,8 +84,8 @@
               {{ "%0.0lf" % ((accepts[problem]*100.0) / (accepts[problem]+rejects[problem])) }}%                  
             {% else %} &nbsp;{% endif %}</td>
             {%- endfor -%}
-            <td class="ok">{{ total_accepts }}<br>
-            {{ "%0.0lf" % ((total_accepts*100.0) / (total_accepts+total_rejects)) }}%</td>
+            <td class="ok">{{ total_accepts }}{%- if total_accepts+total_rejects -%}<br>
+            {{ "%0.0lf" % ((total_accepts*100.0) / (total_accepts+total_rejects)) }}%{% endif %}</td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
             </tr>
@@ -98,8 +98,8 @@
             {% else %}&nbsp; 
             {% endif %}</td>
             {%- endfor -%}
-            <td class="wa">{{ total_rejects }}<br>
-            {{ "%0.0lf" % ((total_rejects*100.0) / (total_accepts+total_rejects)) }}%</td>
+            <td class="wa">{{ total_rejects }}{%- if total_accepts+total_rejects -%}<br>
+            {{ "%0.0lf" % ((total_rejects*100.0) / (total_accepts+total_rejects)) }}%{% endif %}</td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
             </tr>
