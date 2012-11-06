@@ -141,7 +141,7 @@ class Channel():
             except IOError as e:
                 main.tswebapp.logger.error(
                     "Error sending data to socket, {0}, {1}".format(
-                        errno.errorcode[e.errno], e.strerror))
+                        errno.errorcode.get(e.errno, ''), e.strerror))
                 raise CommunicationException(
                     "Error on socket, may be TestSys is down?")
             tot = res if res < 0 else tot + res
