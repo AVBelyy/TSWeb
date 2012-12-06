@@ -201,7 +201,7 @@ class Channel():
         return len(buff)
 
     def _read(self):
-        """Internal funciton for getting next waiting message in queue"""
+        """Internal function for getting next waiting message in queue"""
         if not self.queue:
             return None
         else:
