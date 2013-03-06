@@ -21,8 +21,12 @@ class ConnectionFailedException(Exception):
 
 def dle_encode(string):
     """Encode *string* to TestSys binary protocol"""
+    if not isinstance(string, basestring):
+        string = str(string)
+    if isinstance(string, unicode):
+        string = string.encode('cp866')
     repl = lambda match: "\x18" + chr(0x40+ord(match.group(1)))
-    return encode_regex.sub(repl, str(string))
+    return encode_regex.sub(repl, string)
 
 def dle_decode(string):
     """Decode *string* from TestSys binary protocol"""
