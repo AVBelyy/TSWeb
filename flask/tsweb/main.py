@@ -143,6 +143,7 @@ def sumbit(channel):
         config['compilers'] = compilers
         return render_template("submit.html", **config)
     elif request.method == 'POST':
+        data = None
         if request.files['file']:
             data = request.files['file'].read().encode('cp866')
             filepath = secure_filename(request.files['file'].filename)
