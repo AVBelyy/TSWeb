@@ -238,10 +238,8 @@ def gen_monitor(history, data):
         config['problem_list'] = (problems)
         config['accepts'] = accepted_counters
         config['rejects'] = rejected_counters
-        config['total_accepts'] = reduce(
-            lambda x,y: x+y, [accepted_counters[i] for i in accepted_counters])
-        config['total_rejects'] = reduce(
-            lambda x,y: x+y, [rejected_counters[i] for i in rejected_counters])
+        config['total_accepts'] = sum(accepted_counters.itervalues())
+        config['total_rejects'] = sum(rejected_counters.itervalues())
 
         if len(submissions) > 0:
             succ = filter(
