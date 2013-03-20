@@ -175,6 +175,9 @@ def sumbit(channel):
         if state == 'error':
             return answer
 
+        session['last_problem'] = request.form['prob']
+        session['last_compiler'] = request.form['lang']
+
         return render_template("submit_status.html")
 
 @tswebapp.route('/monitor')
