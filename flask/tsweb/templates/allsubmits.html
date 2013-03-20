@@ -2,10 +2,57 @@
     {% set title = "Все решения" %}
     {% include "header.html" %}
     <body>
+        <script type="text/javascript">
+            function apply_filter() {
+                var selector = '';
+                if (subs_filter['result'])
+                    selector += '[data-result=' + subs_filter['result'] + ']';
+                if (subs_filter['prob'])
+                    selector += '[data-prob=' + subs_filter['prob'] + ']';
+                if (subs_filter['team'])
+                    selector += '[data-team=' + subs_filter['team'] + ']';
+
+                $('tr').show();
+                if (selector) {
+                    $('tr:not(' + selector + ')').hide();
+                    $('#header').show();
+                }
+            }
+
+            $(function() {
+                subs_filter = {};
+
+                $("select[name=result]").change(function() {
+                    subs_filter['result'] = this.value == 'ALL' ? '' : this.value;
+                    apply_filter();
+                });
+                $("input[name=prob]").change(function() {
+                    subs_filter['prob'] = this.value;
+                    apply_filter();
+                });
+                $("input[name=team]").change(function() {
+                    subs_filter['team'] = this.value;
+                    apply_filter();
+                });
+            });
+        </script>
         {% include "menu.html" %}
         <p>
+        <select name="result">
+            <option value="ALL">Все</option>
+            <option value="OK">Accepted</option>
+            <option value="CE">Compilation Error</option>
+            <option value="WA">Wrong Answer</option>
+            <option value="TL">Time Limit</option>
+            <option value="RT">Runtime Error</option>
+            <option value="JE">Jury Error</option>
+        </select>
+        <input type="text" name="prob" placeholder="Задача" />
+        {% if request.args.get('all', 0) %}<input type="text" name="team" placeholder="Участник" />{% endif %}
+        </p>
+        <p>
         <table border="1" align="left" cellpadding="2" cellspacing="3">
-        <tr>
+        <tr id="header">
             <th>ID</th>
             <th>Задача</th>
             <th>Попытка</th>
@@ -34,7 +81,7 @@
         {%- elif sub['Result'] in ('JE', 'FT') -%}
         {%- set class = "fje" %}
         {% endif -%}
-        <tr class="{{ class }}">
+        <tr class="{{ class }}" data-result="{{ sub['Result'] }}" data-prob="{{ sub['Problem'] }}" data-team="{{ sub['Team'][:2] }}">
             <td>{{ sub['ID'] }}</td>
             <td>{{ sub['Problem'] }}</td>
             <td>{{ sub['Attempt'] }}</td>
