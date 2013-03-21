@@ -327,7 +327,10 @@ def getnewmsg(channel):
             state, answer = util.communicate(channel, {'ID': request.args['confirm'], 'Command': 'DisableUnrequested'})
             if state == 'error':
                 return answer
-            return render_template("msg_confirm.html", wtc=wtc - 1)
+            if wtc > 1:
+                return render_template("msg_confirm.html", wtc=wtc - 1)
+            else:
+                return redirect(url_for("index"))
         else:
             state, answer = util.communicate(channel)
 
