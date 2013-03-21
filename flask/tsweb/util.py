@@ -52,6 +52,11 @@ def communicate(chan, request=None, check_empty=True):
     if isinstance(chan, testsys.Channel):
         channel = chan
         need_close = False
+        if not channel.sock: #Because of race conditions channel can be closed. Let's open it
+            try:
+                channel.open(1)
+            except testsys.ConnectionFailedException as ex:
+                return ('error', error(ex.message))
     else:
         channel = testsys.get_channel(chan)
         try:
