@@ -1,28 +1,35 @@
 <html>
-    {% set title = "Все тренировки" %}
+    {% set title = _('List of contests') %}
     {% include "header.html" %}
     <body>
-        {% include "menu.html" %}
-        <h1>{{ title }}</h1>
-        <table border="1" cellpadding="2" cellspacing="3">
-        <tr class="head">
-            <th>ID тренировки<br />
-            <small>Выбрать</small></th>
-            <th>Условия задач<br />
-            <small>СсылкаНажмите, чтобы скачать или открыть условия</small></td>
-            <th>Состояние</th>
-            <th>Начало в</th>
-            <th>Участников</th>
-        </tr>
-        {%- for contest in contests %}
-        <tr>
-            <td><a href="{{ request.script_root }}/contest/{{ contest['id'] }}">{{ contest['id'] }}</a></td>
-            <td><a href="{{ contest['statements'] }}">{{ contest['name'] }}</a></td>
-            <td>{{ contest['state'] }}</td>
-            <td>{{ contest['startedat'] }}</td>
-            <td>{{ contest['teams'] }}</td>
-        </tr>
-        {%- endfor %}
-        </table>
+        <div class="container-fluid">
+            {% include "menu.html" %}
+            <h4 class="span12">{{ title }}</h4>
+            <div class="row-fluid">
+            <table class="table table-condensed span12">
+                <tr class="head">
+                    <th>{{ _('Contest ID') }}<br />
+                    <small>{{ _('Click to enter') }}</small></th>
+                    <th>{{ _('Contest Name') }}<br />
+                    <small>{{ _('Click to read statements') }}</small></td>
+                    <th>{{ _('State') }}</th>
+                    <th>{{ _('Started at') }}</th>
+                    <th>{{ _('Teams count') }}</th>
+            </tr>
+            {%- for contest in contests %}
+            <tr>
+                <td><a href="{{ url_for('changecontest', id=contest['id']) }}">{{ contest['id'] }}</a></td>
+                <td><a href="{{ contest['statements'] }}">{{ contest['name'] }}</a></td>
+                <td>{{ contest['state'] }}</td>
+                <td>{{ contest['startedat'] }}</td>
+                <td>{{ contest['teams'] }}</td>
+            </tr>
+            {%- endfor %}
+            </table>
+            </div>
+        </div>
     </body>
 </html>
+
+{# vim: ft=htmldjango
+#}

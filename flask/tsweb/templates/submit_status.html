@@ -1,14 +1,18 @@
 <html>
-    {% set title = "Статус отправки" %}
+    {% set title = _('Submit status') %}
     {% include "header.html" %}
     <body>
+        <div class="container-fluid">
         {% include "menu.html" %}
+        <div class="row">
         {% if error %}
-        Ваше решение было отправлено на проверку, однако ответ от TestSys не был получен.<br />
+        <p class="span12">{{ _('Your solution has been submitted. However, no response has been received from Testsys.') }}</p>
         {% else %}
-        Ваше решение отправлено на проверку! Удачи!<br />
+        <p class="span12">{{ _('Your submission has been acknowledged! Good luck!') }}</p>
         {% endif %}
-        <hr />
-        <a href="{{ request.script_root }}/submit">Отправить заново</a>&nbsp;&nbsp;<a href="{{ request.script_root }}/index">На главную</a>
+        </div>
     </body>
 <html>
+
+<!-- vim: ft=htmldjango
+--!>

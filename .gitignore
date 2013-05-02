@@ -3,3 +3,4 @@ statements/*
 *.pyc
 tsweb.log*
 config.cfg
+*.mo

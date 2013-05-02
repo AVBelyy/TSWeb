@@ -28,15 +28,12 @@ def parse_line(line):
         raise ParsingError("@command expected")
 
     args = command_regex.findall(match.group(2))
-    tsweb.main.tswebapp.logger.debug("'{0}' parsed to '{1} {2}'".format(
-        line.encode('utf-8'), match.group(1).encode('utf-8'), args))
     return match.group(1), args
 
 def gen_monitor(history, data):
     """Generate config suitable for monitor.html template from raw history and
     monitor data"""
     if data and not history:
-        tsweb.main.tswebapp.logger.debug(data.decode('cp866'))
         return {'pre': data.decode('cp866')}
 
     history = crlf_regex.split(history.decode('cp1251').strip())

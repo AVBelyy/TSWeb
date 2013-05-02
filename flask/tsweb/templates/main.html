@@ -1,30 +1,60 @@
+<!doctype html>
 <html>
-    {% if not title %}{% set title = "TestSys on the Web" %}{% endif %}
+    {% if not title %}{% set title = _('TestSys on the Web') %}{% endif %}
     {% set index = True %}
     {% include "header.html" %}
     <body>
+    <div class="container-fluid">
     {% include "menu.html" %}
-    Вы: <b>{{ session.team }} - {{ session.team_name }}</b>.&nbsp;&nbsp;<a href="{{ request.script_root }}/logout">Выйти</a><br />
-    <hr />
+    <div class="row-fluid">
+        <p class="span12">{{ _('You are logged as %(team)s - %(name)s', team=session.team, name=session.team_name) }}&nbsp;&nbsp;
+        <a class="btn" href="{{ url_for('logout') }}">{{ _('Log out') }}</a></p>
+    </div>
     {% if error %}
-        <span class="err">{{ error }}</span>
+        <div class="row-fluid">
+            <div class="alert alert-block alert-error span12">
+                <p>{{ error }}</p>
+            </div>
+        </div>
     {% else %}
+        <div class="row-fluid">
+        <div class="span12">
         {% if messages %}
-        <b>Сообщения:
+            <h4>{{ _('Messages:') }}</h4>
+            <ul>
+            {% for message in messages -%}
+                {%- if message -%}<li>{{ message }}</li>{%- endif -%}
+            {%- endfor -%}
+            </ul>
+            {%- if wtc -%}
+            <div class="alert alert-info">
+               <strong><a href="{{ url_for('getnewmsg') }}">{{ ngettext('%(num)s new message pending', '%(num)s new messages pending', wtc) }} </a></strong>
+            </div>
+            {%- endif -%}
         {% else %}
-        <b>Нет сообщений.
+            <h4>{{ _('No messages') }}</h4>
         {% endif %}
-        {% if wtc %}<span class="wtp"><a href="{{ request.script_root }}/getnewmsg">{{wtc}} непрочитанн{% if wtc > 1 %}ых{% else %}ое{% endif %}</a>.</span>{% endif %}</b>
-        {% for message in messages %}
-           <br /> {{ message }}
-        {% endfor %}
+        </div>
+        </div>
         <hr />
-        Версия TestSys: {{ version }}<br />
-        Вы решаете: {{ contid }} {{ contname}}<br />
-        Тренировка началась {{ contest_start }}, длительность {{ contest_duration }} минут, время на тестирующем сервере {{ server_now }}</br>
-
-        <h4><a target="_blank" href="http://dist.lokos.net:8900/webct/public/home.pl">Сервер дистанционного обучения http://dist.lokos.net:8900</a></h4>
-        <hr />
+        <div class="row-fluid">
+            <div class="span12">
+                <p>{{ _('TestSys version: <strong>%(version)s</strong>', version=version) }}</p>
+                <p>{{ _('Assigned contest: <strong>%(contid)s %(contname)s</strong>', contid=contid, contname=contname) }}</p>
+                <p>{{ _('Contest starts at <strong>%(contest_start)s</strong> and lasts <strong>%(contest_duration)s</strong> minutes, current TestSys time is <strong>%(server_now)s</strong>', contest_start=contest_start, contest_duration=contest_duration, server_now=server_now) }}</p>
+                <p><a target="_blank" href="http://dist.lokos.net:8900/webct/public/home.pl">Сервер дистанционного обучения http://dist.lokos.net:8900</a></p>
+                <form class="form-inline" action="{{ url_for('set_language') }}">
+                    <label for="lang" class="control-label">{{ _('Language:') }}</label>
+                    <select id="lang" name="lang">
+                        {% for lang, name in config.LANGUAGES.items() %}
+                        <option value="{{ lang }}" {% if lang == session.get('lang', 'en') %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn" type="submit">{{ _('Save') }}</button>
+                </form>
+            </div>
+        </div>
     {% endif %}
+    </div>
     </body>
 </html>

@@ -1,14 +1,19 @@
 <!-- menu.html -->
+<div class="navbar">
+    <div class="navbar-inner">
 {%- if not index|d(False) -%}
-<a href="{{ request.script_root }}/index">Главная страница</a>&nbsp;|&nbsp;
+        <a class="brand" href="{{ url_for('index') }}">{{ _('Main page') }}</a>
 {%- endif -%}
-<a href="{{ request.script_root }}/submit">Отправить решение</a>&nbsp;|&nbsp;
-<a href="{{ request.script_root }}/monitor">Рейтинг</a>&nbsp;|&nbsp;
-<a href="{{ request.script_root }}/clars">Вопросы</a>&nbsp;|&nbsp;
-<a href="{{ request.script_root }}/allsubmits">Отправки</a>
-{% if statements %}&nbsp;|&nbsp;<a href="{{ statements }}">Условия задач</a>{% endif %}
-{% if printsol %}&nbsp;|&nbsp;<a href="{{ request.script_root }}/printsol">Print solution</a>{% endif %}
-{% if contlist_mask %}&nbsp;|&nbsp;<a href="{{ request.script_root }}/contests?mask={{contlist_mask}}">Все тренировки</a>{% endif %}
-{% if jury %}&nbsp;|&nbsp;<a href="{{ request.script_root }}/allsubmits?all=1">Все отправки</a>{% endif %}
-&nbsp;|&nbsp;<a href="{{ request.script_root }}/logout">Выход</a>
-<hr>
+        <ul class="nav">
+            <li><a href="{{ url_for('submit') }}">{{ _('Submit') }}</a></li>
+            <li><a href="{{ url_for('monitor_page') }}">{{ _('Monitor') }}</a></li>
+            <li><a href="{{ url_for('clars') }}">{{ _('Clarifications') }}</a></li>
+            <li><a href="{{ url_for('submits') }}">{{ _('Submissions') }}</a></li>
+            {%- if statements %}<li><a href="{{ statements }}">{{ _('Statements') }}</a></li>{% endif -%}
+            {%- if printsol %}<li><a href="#">{{ _('Print solution') }}</a></li>{% endif -%}
+            {%- if contlist_mask %}<li><a href="{{ url_for('contests', mask=contlist_mask) }}">{{ _('All contests') }}</a></li>{% endif -%}
+            {%- if jury %}<li><a href="{{ url_for('submits', all='1') }}">{{ _('All submissions') }}</a></li>{% endif -%}
+            <li><a href="{{ url_for('logout') }}">{{ _('Log out') }}</a></li>
+        </ul>
+    </div>
+</div>

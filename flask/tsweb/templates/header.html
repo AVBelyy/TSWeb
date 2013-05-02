@@ -1,8 +1,17 @@
 <head>
     <title>{{ title }}</title>
-    <link href="{{ request.script_root }}/static/tsweb.css" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename='tsweb.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap-responsive.min.css') }}" rel="stylesheet" type="text/css">
     {% if extcss %}
-    <link href="{{ request.script_root }}/static/{{ extcss }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename=extcss) }}" rel="stylesheet" type="text/css">
     {% endif %}
     <script src="http://yandex.st/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <script>
+        $(function () {
+            $("[rel='tooltip']").tooltip();
+        });
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>

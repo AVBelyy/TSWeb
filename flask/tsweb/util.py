@@ -5,6 +5,7 @@ from pygments.lexers import guess_lexer
 from pygments.formatters import HtmlFormatter
 from pygments import highlight as p_highlight
 from BeautifulSoup import BeautifulSoup as bs
+from flask.ext.babel import gettext
 
 from tsweb import testsys
 
@@ -19,8 +20,8 @@ def redirector(url, **kwargs):
 def login_error():
     """Return error about missing or expired login data"""
     return render_template("error.html",
-        text="Login error: session data missing or expired",
-        title="Authentification Error")
+        text=gettext("Login error: session data missing or expired"),
+        title=gettext("Authentification Error"))
 
 def error(msg):
     """Return generaral error using *msg* as it's message"""
@@ -29,9 +30,9 @@ def error(msg):
 def testsys_error(msg):
     """Return TestSys error, using *msg* as message"""
     return render_template("error.html",
-        text="TestSys reports following error: {0}".format(msg) if msg
-            else "TestSys reports unknown error",
-        title="TestSys error")
+        text=gettext("TestSys reports following error: {0}").format(msg) if msg
+            else gettext("TestSys reports unknown error"),
+        title=gettext("TestSys error"))
 
 def communicate(chan, request=None, check_empty=True):
     """Send request to testsys and get response. It returns tuple (state, answer),
@@ -72,13 +73,13 @@ def communicate(chan, request=None, check_empty=True):
             return ('error', error(ex.message))
     else:
         ans_id = 0
- 
+
     answer = channel.recv()
     if not answer and check_empty:
-        return ('error', error("Empty response from testsys"))
+        return ('error', error(gettext("Empty response from testsys")))
     if 'Error' in answer:
         return ('error', testsys_error(answer['Error']))
- 
+
     if need_close:
         channel.close()
 
@@ -87,7 +88,8 @@ def communicate(chan, request=None, check_empty=True):
 def highlight(text):
     """Guess language in *text* and return its html highlighted version"""
     lexer = guess_lexer(text)
-    return p_highlight(text, lexer, HtmlFormatter(full=True, style='manni'))
+    formatter = HtmlFormatter(style='manni', linenos=True, classprefix="highlight-")
+    return formatter.get_style_defs(), p_highlight(text, lexer, formatter)
 
 def parse_contests(text):
     """Parse raw html contests data in *text* to list of dictionaries with

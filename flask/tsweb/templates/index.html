@@ -1,23 +1,42 @@
 <html>
-{% set title = "Вход в тестирующую систему" %}
+{% set title = _('TestSys on the Web') %}
 {% include "header.html" %}
 <body class="main">
-    <h1>Testsys/Web Login</h1>
-    {% if error %}<span class="err">{{ error }}</span>{% endif %}<br />
-    Спросите у преподавателя логин и пароль и войдите в систему.<br />
-    <form action="{{ request.script_root }}/login" method="post" class="frm">
-    <table>
-    <tr>
-        <td>Логин: <input name="team" size="8" {% if request.form.team %}value="{{request.form.team}}"{% endif %} > Пароль: </td>
-        <td><input name="password" type="password" size="16">
-        <input name="op" type="submit" class="submb" value="Войти"></td>
-    </tr>
-    <tr>
-        <td>ID тренировки (можно не вводить):</td>
-        <td><input name="contestid" size="16" {% if request.form.contestid %}value="{{request.form.contestid}}{% endif %}"></td>
-    </tr>
-    </table>
-    </form>
-    <a href="{{ request.script_root }}/logout">Очистить cookies</a>
+    <div class="container-fluid">
+    <div class="row-fluid">
+        <h1 class="span12">Testsys/Web Login</h1>
+    </div>
+    <div class="row-fluid">
+    {% if error %}<span class="err">{{ error }}</span>{% endif %}
+        <p class="span12">{{ _('You are currently not logged in.') }}</p>
+    </div>
+    <div class="row-fluid">
+        <form action="{{ url_for('login') }}" method="post" class="form-horizontal span12">
+            <div class="control-group">
+                <label class="control-label" for="team">{{ _('Team') }}</label>
+                <div class="controls">
+                    <input id="team" name="team" type="text" {% if request.form.team %}value="{{request.form.team}}"{% endif %} />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="password">{{ _('Password') }}</label>
+                <div class="controls">
+                    <input id="password" name="password" type="password" />
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn">{{ _('Login')}}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="row-fluid">
+        <a href="{{ url_for('logout') }}" class="span12">{{ _('Remove all cookies') }}</a>
+    </div>
+    </div>
 </body>
 </html>
+
+<!-- vim: ft=htmldjango
+--!>

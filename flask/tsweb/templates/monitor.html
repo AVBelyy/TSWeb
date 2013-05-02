@@ -1,47 +1,50 @@
 <html>
-    {% set title = "Рейтинг" %}
+    {% set title = "Contest Monitor" %}
     {% set extcss = "monitor.css" %}
     {% include "header.html" %}
-    <body class="monit">
+    <body>
+    <div class="container-fluid">
     {% include "menu.html" %}
     {% if error %}
-    <span class="errm">{{ error }}
+    <p class="alert alert-error">{{ error }}</p>
     {% else %}
         {% if pre %}
         <pre>
         {{ pre }}
         </pre>
         {% else %}
-        <h1>{{ contest }}</h1>
-        Начало: <b>{{ startat }}</b> &nbsp; &nbsp; &nbsp;
-        Длительность: <b>{{ '%d:%02d' % (contlen/60, contlen%60) }}</b><br />
-        Состояние: <b>{{ state }} {{ '%.0f' % (now/60) }}/{{ contlen }}</b><br />
-        {%- if last_success -%}
-        Последний успех: {{ last_success.htime }}, <b>{{ last_success.team }}</b> &mdash; <b>{{ last_success.team_name }}</b>, задача <b>{{ last_success.problem }}</b><br />
-        {%- endif -%}
-        {%- if last_submission -%}
-        Последняя отправка: {{ last_submission.htime }}, <b>{{ last_submission.team }}</b> &mdash; <b>{{ last_submission.team_name }}</b>, задача <b>{{ last_submission.problem }}</b><br />
-		{%- endif -%}
-		<br>
-
-        <table border="1" cellpadding="4" class="mtab">
+        <div class="row-fluid">
+            <div class="span12">
+            <h4>{{ contest }}</h4>
+            {{ _('Started at: <b>%(startat)s</b>', startat=startat) }}&nbsp;&nbsp;
+            {{ _('Duration: <b>%(duration)s</b>', duration='%d:%02d' % (contlen/60, contlen%60)) }}<br />
+            {{ _('State: <b>%(state)s %(mins)s/%(contlen)s</b>', state=state, mins='%.0f' % (now/60), contlen=contlen) }}<br />
+            {{ _('Last success: %(htime)s, team <b>%(team)s</b> &mdash; <b>%(name)s</b>, problem <b>%(problem)s</b>', htime=last_success.htime, team=last_success.team, name=last_success.team_name, problem=last_success.problem) }}<br />
+            {{ _('Last submission: %(htime)s, team <b>%(team)s</b> &mdash; <b>%(name)s</b>, problem <b>%(problem)s</b>', htime=last_submission.htime, team=last_submission.team, name=last_submission.team_name, problem=last_submission.problem) }}<br />
+            <div>
+        </div>
+        <div class="row-fluid">
+        <table class="table table-hover table-condensed span12">
         <tr class="head">
             <th>ID</th>
-            <th>Участники</th>
-            {%- for problem in problem_list %}
-            <th width="35">{{ problem }}</th>
+            <th>{{ _('Team') }}</th>
+            {%- for name, problem in problem_list.items() %}
+            <th width="35"><span data-original-title="{{ problem[0] }}" rel="tooltip">{{ name }}</span></th>
             {%- endfor %}
             <th width="25">=</th>
-            <th>Время</th>
-            <th>Рейтинг</th>
+            <th>{{ _('Time') }}</th>
+            <th>{{ _('Rank') }}</th>
         </tr>
         {%- for rank, list in teams_list|groupby(4)|reverse -%}
         {% set class = loop.cycle('even', 'odd') %}
         {%- for team, mclass, set, name, solved, score, rank in list %}
-        {%- if results[team] %}
-        <tr class="{{ class }}">
-            <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ team }}</td>
-            <td {% if m_for|d('') == team %}class="for"{% endif %}>{{ name }} </td>
+        {% if results[team] %}
+        {% if m_for|d(session.team) == team %}
+            {% set for_class="for" %}
+        {% endif %}
+        <tr class="{{ class }} {{ for_class }}">
+            <td class="{{ for_class }}">{{ team }}</td>
+            <td class="{{ for_class }}">{{ name }}</td>
             {% for attempts, score, time, res, test in results[team] -%}
             {%- set succ = False -%}
             {%- set out_time = True -%}
@@ -62,13 +65,12 @@
             <td class="solv">{{ solved }}</td>
             <td class="pen">{{ score // 60 }}</td>
             <td class="rk">{{ rank }}</td>
-        {%- endif %}
+        {%- endif -%}
         {%- endfor %}
         {%- if loop.last -%}
-        {% if class == 'even' %}{% set class = 'odd' %}{% else %}{% set class = 'even' %}{% endif %}
             <tr class="{{ class }}">
             <td>&nbsp;</td>
-            <td class="no">Отправлено решений</td>
+            <td class="no">{{ _('Submits') }}</td>
             {%- for problem in problem_list|sort -%}
             <td class="no">{% if accepts[problem]+rejects[problem] %}{{ accepts[problem]+rejects[problem] }}{% else %}&nbsp;{% endif %}</td>
             {%- endfor -%}
@@ -78,7 +80,7 @@
             </tr>
             <tr class="{{ class }}">
             <td>&nbsp;</td>
-            <td class="ok">Принято - accepted</td>
+            <td class="ok">{{ _('Accepted') }}</td>
             {%- for problem in problem_list|sort -%}
             <td class="ok">{% if accepts[problem] %}{{ accepts[problem] }}<br>
               {{ "%0.0lf" % ((accepts[problem]*100.0) / (accepts[problem]+rejects[problem])) }}%                  
@@ -91,7 +93,7 @@
             </tr>
             <tr class="{{ class }}">
             <td>&nbsp;</td>
-            <td class="wa">Отклонено - rejected</td>
+            <td class="wa">{{ _('Rejected') }}</td>
             {%- for problem in problem_list|sort -%}
             <td class="wa">{% if rejects[problem] %}{{ rejects[problem] }}<br>
               {{ "%0.0lf" % ((rejects[problem]*100.0) / (accepts[problem]+rejects[problem])) }}%                  
@@ -106,15 +108,19 @@
         {% endif -%}
         {%- endfor %}
         </table>
+        </div>
+        <div class="row-fluid">
+            <div class="span12">
+                <h4>{{ _('Teams list') }}</h4>
+                <ol>
+                {%- for team, name in active_teams -%}
+                    <li><!--{{ team }} &mdash;-->{{ name }}</li>
+                {%- endfor -%}
+                </ol>
+            </div>
+        </div>
         {% endif %}
     {% endif %}
-
-    <h3>Список группы:</h3>
-    <ol>
-    {%- for team, name in active_teams -%}
-        <li><!--{{ team }} &mdash;-->{{ name }}</li>
-    {%- endfor -%}
-    </ol>
     </body>
 </html>
 

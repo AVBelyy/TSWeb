@@ -1,4 +1,6 @@
 
+# -*- coding: utf-8 -*-
+
 import os, logging
 from ConfigParser import ConfigParser
 
@@ -26,3 +28,8 @@ SMTP_SERVER = config.get('Logging', 'smtp_server')
 SMTP_PORT = config.get('Logging', 'smtp_port')
 EMAIL_FROM = config.get('Logging', 'email_from')
 EMAIL_PASSWORD = config.get('Logging', 'email_password')
+
+LANGUAGES = {
+    'en': 'English',
+    'ru': u'Русский',
+}

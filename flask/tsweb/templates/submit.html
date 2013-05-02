@@ -1,48 +1,49 @@
 <html>
-    {% set title = "Отправить решение" %}
+    {% set title = _('Testsys submit') %}
     {% include "header.html" %}
     <body>
+    <div class="container-fluid">
     {% include "menu.html" %}
-    <form action="{{ request.script_root }}/submit" enctype="multipart/form-data" method="post" class="frm"> 
-    <table align="center" cellpadding="2" cellspacing="3">
-        <tr class="od">
-            <td>Задача:<br/><i>Выберите задачу</i></td>
-            <td>
-                <select name="prob">
-                {% for problem in problems|sort %}
-                    <option value="{{ problem }}" {% if session.get('last_problem', '') == problem %}selected{% endif %}>{{ problem }}{% if problems[problem] %}: {{ problems[problem] }}{% endif %}</option>
-                {% endfor %}
-                </select>
-            </td>
-        </tr>
-        <tr class="ev">
-            <td>Язык программирования:<br /><i>Выберите компилятор/интерпретатор</i></td>
-            <td>
-                <select name="lang">
-                {% set i = 0 %}
-                {% for compiler in compilers %}
-                	{% set i = i + 1 %}
-                    <option value="{{ i }}" {% if session.get('last_compiler', '0') == i~'' %}selected{% endif %}>{{ compiler[0] }}{% if compiler[1] %}: {{ compiler[1] }}{% endif %}</option>
-                {% endfor %}
-                </select>
-            </td>
-        </tr>
-        <tr class="od">
-            <td>Решение:<br /><i>Загрузите ваше решение...</i></td>
-            <td>
-                <input class="sm" size="32" type="file" name="file"</input>
-            </td>
-        </tr>
-        <tr class="ev">
-            <td>Текст решения:<br /><i>...или вставьте его сюда</i></td>
-            <td><textarea name="solution" cols="100" rows="35" wrap="virtual"></textarea></td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td>
-                <input class="submb" type="submit" value="Отправить на проверку">
-            </td>
-        </tr>
-    </table>
+        <div class="row-fluid">
+            <form action="{{ url_for('submit') }}" enctype="multipart/form-data" method="post">
+            <table class="span12 table table-condensed table-striped">
+                <tr>
+                    <td>{{ _('Problem:<br/><i>Choose here the problem id</i>') }}</td>
+                    <td>
+                        <select id="prob" name="prob">
+                        {% for problem in problems|sort %}
+                            <option value="{{ problem }}" {% if session.get('last_problem', '') == problem %}selected{% endif %}>{{ problem }}{% if problems[problem] %}: {{ problems[problem] }}{% endif %}</option>
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>{{ _('Language:<br /><i>Choose one of the compilers</i>') }}</ td>
+                    <td>
+                        <select id="lang" name="lang">
+                        {% set i = 0 %}
+                        {% for compiler in compilers %}
+                            {% set i = i + 1 %}
+                            <option value="{{ i }}" {% if session.get('last_compiler', '0') == i~'' %}selected{% endif %}>{{ compiler[0] }}{% if compiler[1] %}: {{ compiler[1] }}{% endif %}</option>
+                        {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>{{ _('Solution:<br /><i>Attach here your solution</i>') }}</td>
+                    <td><input id="file" type="file" name="file"</input></td>
+                </tr>
+                <tr>
+                    <td>{{ _('Solution text:<br /><i>... or paste it here</i>') }}</td>
+                    <td><textarea id="solution" name="solution" cols="80" rows="25" wrap="virtual" style="width: 100%;"></textarea></td>
+                </tr>
+            </table>
+            <button class="btn btn-primary" type="submit">{{ _('Submit') }}</button>
+            </form>
+        </div>
+    </div>
     </body>
 </html>
+
+<!-- vim: ft=htmldjango
+--!>
