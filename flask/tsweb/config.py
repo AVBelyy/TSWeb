@@ -12,6 +12,7 @@ SECRET_KEY = config.get('General', 'secret_key')
 DEBUG = config.getboolean('General', 'debug')
 PRINTSOL = config.get('General', 'printsol')
 CONTLIST_MASK = config.get('General', 'contlist_mask')
+PUN = config.getboolean('General', 'pun')
 
 TESTSYS_HOST = config.get('Testsys', 'host')
 TIMEOUT = config.getfloat('Testsys', 'timeout')

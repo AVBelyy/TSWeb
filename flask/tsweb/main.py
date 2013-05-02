@@ -1,3 +1,6 @@
+
+# -*- coding: utf8; -*-
+
 import re, logging, logging.handlers
 import testsys, config, monitor
 from tsweb import decorators, util
@@ -85,7 +88,10 @@ def format_main_page(ans, ans_id):
     config['jury'] = ans.get('JuryMode', False)
     config['statements'] = ans.get('StatementsLink', '')
     config['contlist_mask'] = tswebapp.config['CONTLIST_MASK']
-    config['messages'] = re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251'))
+    if tswebapp.config['PUN']:
+        config['messages'] = map(mangle_result, re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251')))
+    else:
+        config['messages'] = re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251'))
     config['version'] = ans.get('Version', 0)
     config['contid'] = ans.get('ContestId', '')
     config['contname'] = ans.get('ContestName', '').decode('cp866')
@@ -95,6 +101,14 @@ def format_main_page(ans, ans_id):
     session['team_name'] = ans.get('TeamName', session['team']).decode('cp866')
 
     return render_template("main.html", **config)
+
+def mangle_result(string):
+    string = string.replace('Time Limit', u'Непунктуальность возмутительная')
+    string = string.replace('Wrong Answer', u'Происки бесовские')
+    string = string.replace('Accepted', u'Счастье вселенское')
+    string = string.replace('Compilation Error', u'Ты бестолочь')
+    return string
+
 
 @decorators.channel_fetcher({'Request': 'ContestData'}, auth=True)
 def get_compilers(ans, id):
