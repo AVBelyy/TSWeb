@@ -1,0 +1,435 @@
+# Translations template for PROJECT.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2013-05-02 23:21+0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+
+#: tsweb/main.py:66
+msgid "Invalid team name"
+msgstr ""
+
+#: tsweb/main.py:69
+msgid "Non-empty password expected"
+msgstr ""
+
+#: tsweb/main.py:88
+msgid "Thank you for logging in, {0}!"
+msgstr ""
+
+#: tsweb/main.py:169
+msgid "No solution presented"
+msgstr ""
+
+#: tsweb/main.py:173
+msgid "Unknown problem '{0}'"
+msgstr ""
+
+#: tsweb/main.py:175
+msgid "Unknown compiler '{0}'"
+msgstr ""
+
+#: tsweb/main.py:207
+msgid "Your contest has been changed to {0}, {1}!"
+msgstr ""
+
+#: tsweb/util.py:23
+msgid "Login error: session data missing or expired"
+msgstr ""
+
+#: tsweb/util.py:24
+msgid "Authentification Error"
+msgstr ""
+
+#: tsweb/util.py:33
+msgid "TestSys reports following error: {0}"
+msgstr ""
+
+#: tsweb/util.py:34
+msgid "TestSys reports unknown error"
+msgstr ""
+
+#: tsweb/util.py:35
+msgid "TestSys error"
+msgstr ""
+
+#: tsweb/util.py:79
+msgid "Empty response from testsys"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:2 tsweb/templates/allsubmits.html:43
+msgid "Submits list"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:54 tsweb/templates/allsubmits.html:61
+#: tsweb/templates/clars.html:14
+msgid "Problem"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:55 tsweb/templates/allsubmits.html:74
+#: tsweb/templates/index.html:16 tsweb/templates/monitor.html:30
+msgid "Team"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:62
+msgid "Attempt"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:63 tsweb/templates/monitor.html:35
+msgid "Time"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:64
+msgid "Compiler"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:65 tsweb/templates/feedback.html:14
+msgid "Result"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:66 tsweb/templates/feedback.html:13
+msgid "Test"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:67
+msgid "MaxTime"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:68
+msgid "MaxMem"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:69
+msgid "Text"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:70
+msgid "Comment"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:70
+msgid "CE Cause"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:71
+msgid "Feedback"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:72
+msgid "Use Token"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:73
+msgid "Score"
+msgstr ""
+
+#: tsweb/templates/allsubmits.html:98 tsweb/templates/allsubmits.html:102
+msgid "View"
+msgstr ""
+
+#: tsweb/templates/clar_status.html:8
+msgid "Your clarification request has been acknowledged! Good luck!"
+msgstr ""
+
+#: tsweb/templates/clars.html:2
+msgid "Testsys Clarification Request"
+msgstr ""
+
+#: tsweb/templates/clars.html:8
+msgid "Clarification Requests"
+msgstr ""
+
+#: tsweb/templates/clars.html:13
+msgid "From"
+msgstr ""
+
+#: tsweb/templates/clars.html:15
+msgid "Question"
+msgstr ""
+
+#: tsweb/templates/clars.html:16
+msgid "Answer"
+msgstr ""
+
+#: tsweb/templates/clars.html:17
+msgid "Answered"
+msgstr ""
+
+#: tsweb/templates/clars.html:18
+msgid "Broadcast"
+msgstr ""
+
+#: tsweb/templates/clars.html:36 tsweb/templates/submit.html:11
+msgid "Problem:<br/><i>Choose here the problem id</i>"
+msgstr ""
+
+#: tsweb/templates/clars.html:46
+msgid "Clarification text:"
+msgstr ""
+
+#: tsweb/templates/clars.html:50
+msgid "Submit Clarification Request"
+msgstr ""
+
+#: tsweb/templates/contests.html:2
+msgid "List of contests"
+msgstr ""
+
+#: tsweb/templates/contests.html:11
+msgid "Contest ID"
+msgstr ""
+
+#: tsweb/templates/contests.html:12
+msgid "Click to enter"
+msgstr ""
+
+#: tsweb/templates/contests.html:13
+msgid "Contest Name"
+msgstr ""
+
+#: tsweb/templates/contests.html:14
+msgid "Click to read statements"
+msgstr ""
+
+#: tsweb/templates/contests.html:15
+msgid "State"
+msgstr ""
+
+#: tsweb/templates/contests.html:16
+msgid "Started at"
+msgstr ""
+
+#: tsweb/templates/contests.html:17
+msgid "Teams count"
+msgstr ""
+
+#: tsweb/templates/error.html:2 tsweb/templates/error.html:8
+msgid "Error"
+msgstr ""
+
+#: tsweb/templates/error.html:13 tsweb/templates/menu.html:5
+msgid "Main page"
+msgstr ""
+
+#: tsweb/templates/feedback.html:2
+#, python-format
+msgid "Feedback for submission %(id)s"
+msgstr ""
+
+#: tsweb/templates/getnewmsg.html:2 tsweb/templates/getnewmsg.html:9
+msgid "New messages"
+msgstr ""
+
+#: tsweb/templates/getnewmsg.html:11
+msgid "Sorry, no new messages"
+msgstr ""
+
+#: tsweb/templates/getnewmsg.html:14
+msgid "Click here to confirm"
+msgstr ""
+
+#: tsweb/templates/index.html:2 tsweb/templates/main.html:3
+msgid "TestSys on the Web"
+msgstr ""
+
+#: tsweb/templates/index.html:11
+msgid "You are currently not logged in."
+msgstr ""
+
+#: tsweb/templates/index.html:22
+msgid "Password"
+msgstr ""
+
+#: tsweb/templates/index.html:29
+msgid "Login"
+msgstr ""
+
+#: tsweb/templates/index.html:35
+msgid "Remove all cookies"
+msgstr ""
+
+#: tsweb/templates/main.html:10
+#, python-format
+msgid "You are logged as %(team)s - %(name)s"
+msgstr ""
+
+#: tsweb/templates/main.html:11 tsweb/templates/menu.html:16
+msgid "Log out"
+msgstr ""
+
+#: tsweb/templates/main.html:23
+msgid "Messages:"
+msgstr ""
+
+#: tsweb/templates/main.html:31
+#, python-format
+msgid "%(num)s new message pending"
+msgid_plural "%(num)s new messages pending"
+msgstr[0] ""
+msgstr[1] ""
+
+#: tsweb/templates/main.html:35
+msgid "No messages"
+msgstr ""
+
+#: tsweb/templates/main.html:42
+#, python-format
+msgid "TestSys version: <strong>%(version)s</strong>"
+msgstr ""
+
+#: tsweb/templates/main.html:43
+#, python-format
+msgid "Assigned contest: <strong>%(contid)s %(contname)s</strong>"
+msgstr ""
+
+#: tsweb/templates/main.html:44
+#, python-format
+msgid ""
+"Contest starts at <strong>%(contest_start)s</strong> and lasts "
+"<strong>%(contest_duration)s</strong> minutes, current TestSys time is "
+"<strong>%(server_now)s</strong>"
+msgstr ""
+
+#: tsweb/templates/main.html:47
+msgid "Language:"
+msgstr ""
+
+#: tsweb/templates/main.html:53
+msgid "Save"
+msgstr ""
+
+#: tsweb/templates/menu.html:8 tsweb/templates/submit.html:41
+msgid "Submit"
+msgstr ""
+
+#: tsweb/templates/menu.html:9
+msgid "Monitor"
+msgstr ""
+
+#: tsweb/templates/menu.html:10
+msgid "Clarifications"
+msgstr ""
+
+#: tsweb/templates/menu.html:11
+msgid "Submissions"
+msgstr ""
+
+#: tsweb/templates/menu.html:12
+msgid "Statements"
+msgstr ""
+
+#: tsweb/templates/menu.html:13
+msgid "Print solution"
+msgstr ""
+
+#: tsweb/templates/menu.html:14
+msgid "All contests"
+msgstr ""
+
+#: tsweb/templates/menu.html:15
+msgid "All submissions"
+msgstr ""
+
+#: tsweb/templates/monitor.html:19
+#, python-format
+msgid "Started at: <b>%(startat)s</b>"
+msgstr ""
+
+#: tsweb/templates/monitor.html:20
+#, python-format
+msgid "Duration: <b>%(duration)s</b>"
+msgstr ""
+
+#: tsweb/templates/monitor.html:21
+#, python-format
+msgid "State: <b>%(state)s %(mins)s/%(contlen)s</b>"
+msgstr ""
+
+#: tsweb/templates/monitor.html:22
+#, python-format
+msgid ""
+"Last success: %(htime)s, team <b>%(team)s</b> &mdash; <b>%(name)s</b>, "
+"problem <b>%(problem)s</b>"
+msgstr ""
+
+#: tsweb/templates/monitor.html:23
+#, python-format
+msgid ""
+"Last submission: %(htime)s, team <b>%(team)s</b> &mdash; <b>%(name)s</b>,"
+" problem <b>%(problem)s</b>"
+msgstr ""
+
+#: tsweb/templates/monitor.html:36
+msgid "Rank"
+msgstr ""
+
+#: tsweb/templates/monitor.html:73
+msgid "Submits"
+msgstr ""
+
+#: tsweb/templates/monitor.html:83
+msgid "Accepted"
+msgstr ""
+
+#: tsweb/templates/monitor.html:96
+msgid "Rejected"
+msgstr ""
+
+#: tsweb/templates/monitor.html:114
+msgid "Teams list"
+msgstr ""
+
+#: tsweb/templates/redirect.html:8
+msgid "Click here if you are not redirected automatically."
+msgstr ""
+
+#: tsweb/templates/submit.html:2
+msgid "Testsys submit"
+msgstr ""
+
+#: tsweb/templates/submit.html:21
+msgid "Language:<br /><i>Choose one of the compilers</i>"
+msgstr ""
+
+#: tsweb/templates/submit.html:33
+msgid "Solution:<br /><i>Attach here your solution</i>"
+msgstr ""
+
+#: tsweb/templates/submit.html:37
+msgid "Solution text:<br /><i>... or paste it here</i>"
+msgstr ""
+
+#: tsweb/templates/submit_status.html:2
+msgid "Submit status"
+msgstr ""
+
+#: tsweb/templates/submit_status.html:9
+msgid ""
+"Your solution has been submitted. However, no response has been received "
+"from Testsys."
+msgstr ""
+
+#: tsweb/templates/submit_status.html:11
+msgid "Your submission has been acknowledged! Good luck!"
+msgstr ""
+
+#: tsweb/templates/viewsubmit.html:2
+msgid "Submission source"
+msgstr ""
+
+#: tsweb/templates/viewsubmit.html:11
+msgid "Raw"
+msgstr ""
+

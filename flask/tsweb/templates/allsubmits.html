@@ -1,5 +1,5 @@
 <html>
-    {% set title = "Все решения" %}
+    {% set title = _('Submits list') %}
     {% include "header.html" %}
     <body>
         <script type="text/javascript">
@@ -36,38 +36,42 @@
                 });
             });
         </script>
-        {% include "menu.html" %}
-        <p>
-        <select name="result">
-            <option value="ALL">Все</option>
-            <option value="OK">Accepted</option>
-            <option value="CE">Compilation Error</option>
-            <option value="WA">Wrong Answer</option>
-            <option value="TL">Time Limit</option>
-            <option value="RT">Runtime Error</option>
-            <option value="JE">Jury Error</option>
-        </select>
-        <input type="text" name="prob" placeholder="Задача" />
-        {% if request.args.get('all', 0) %}<input type="text" name="team" placeholder="Участник" />{% endif %}
-        </p>
-        <p>
-        <table border="1" align="left" cellpadding="2" cellspacing="3">
+        <div class="container-fluid">
+            {%- include "menu.html" -%}
+            <div class="row-fluid">
+                <div class="span12">
+                    <h4>{{ _('Submits list') }}</h4>
+                    <form class="form-inline">
+                        <select name="result">
+                            <option value="ALL">All</option>
+                            <option value="OK">Accepted</option>
+                            <option value="CE">Compilation Error</option>
+                            <option value="WA">Wrong Answer</option>
+                            <option value="TL">Time Limit</option>
+                            <option value="RT">Runtime Error</option>
+                            <option value="JE">Jury Error</option>
+                        </select>
+                        <input type="text" name="prob" placeholder="{{ _('Problem') }}" />
+                        {% if request.args.get('all', 0) %}<input type="text" name="team" placeholder="{{ _('Team') }}" />{% endif %}
+                    </form>
+
+        <table class="table table-condensed">
         <tr id="header">
             <th>ID</th>
-            <th>Задача</th>
-            <th>Попытка</th>
-            <th>Время</th>
-            <th>Компилятор</th>
-            <th>Результат</th>
-            <th>Тест</th>
-            {% if tl %}<th>Макс. время</th>{% endif -%}
-            {% if ml %}<th>Макс. память</th>{% endif -%}
-            <th>Код</th>
-            {% if team %}<th>Комментарий</th>{% else %}<th>CE Cause</th>{% endif -%}
-            {% if feed %}<th>Feedback</th>{% endif -%}
-            {% if token %}<th>Use Token</th>{% endif -%}
-            {% if score %}<th>Score</th>{% endif -%}
-            {% if team %}<th>Team</th>{% endif %}
+            <th>{{ _('Problem') }}</th>
+            <th>{{ _('Attempt') }}</th>
+            <th>{{ _('Time') }}</th>
+            <th>{{ _('Compiler') }}</th>
+            <th>{{ _('Result') }}</th>
+            <th>{{ _('Test') }}</th>
+            {% if tl %}<th>{{ _('MaxTime') }}</th>{% endif -%}
+            {% if ml %}<th>{{ _('MaxMem') }}</th>{% endif -%}
+            <th>{{ _('Text') }}</th>
+            {% if team %}<th>{{ _('Comment') }}</th>{% else %}<th>{{ _('CE Cause') }}</th>{% endif -%}
+            {% if feed %}<th>{{ _('Feedback') }}</th>{% endif -%}
+            {% if token %}<th>{{ _('Use Token') }}</th>{% endif -%}
+            {% if score %}<th>{{ _('Score') }}</th>{% endif -%}
+            {% if team %}<th>{{ _('Team') }}</th>{% endif %}
         </tr>
         {% for sub in submissions %}
         {%- if sub['Result'] == 'OK' -%}
@@ -91,16 +95,18 @@
             <td>{{ sub['Test'] }}</td>
             {% if tl %}<td>{{ sub['TL']|d('&nbsp;') }}</td>{% endif %}
             {% if ml %}<td>{{ sub['ML']|d('&nbsp;') }}</td>{% endif %}
-            <td><a target="_blank" href="{{ request.script_root }}/allsubmits/view/{{ sub['ID'] }}">Открыть</a></td>
+            <td><a href="{{ url_for('viewsubmit', id=sub['ID']) }}">{{ _('View') }}</a></td>
             <td>
                 <pre>{{ sub['CE']}}</pre>
             </td>
-            {% if feed %}<td>{% if sub['Feedback'] %}<a href="{{ request.script_root }}/allsubmits/feedback/{{ sub['ID'] }}">Открыть</a>{% else %}&nbsp;{% endif %}</td>{% endif %}
+            {% if feed %}<td>{% if sub['Feedback'] %}<a href="{{ url_for('feedback', id=sub['ID']) }}">{{ _('View') }}</a>{% else %}&nbsp;{% endif %}</td>{% endif %}
             {% if score %}<td>{{ sub['Score']|d('&nbsp;') }}</td>{% endif -%}
             {% if team %}<td>{{ sub['Team']|d('&nbsp;') }}</td>{% endif -%}
         </tr>
         {%- endfor %}
         </table>
-        </p>
     </body>
 </html>
+
+{# vim: ft=htmldjango
+#}

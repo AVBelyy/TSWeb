@@ -1,14 +1,22 @@
 <html>
-{% set title = "Новые сообщения" %}
+{% set title = _('New messages') %}
 {% include "header.html" %}
 <body>
+    <div class="container-fluid">
     {% include "menu.html" %}
-    <h1>Новые сообщения</h1>
-    {% if not message %}
-    Нет новых сообщений.<br /><br />
-    {% else %}
-    <span class="newmsg">{{ message }}</span><br /><br />
-    <a href="{{ request.script_root }}/getnewmsg?confirm={{ id }}">Нажмите сюда для подтверждения</a></a>
-    {% endif %}
+    <div class="row-fluid">
+        <div class="span12">
+            <h4>{{ _('New messages') }}</h4>
+            {% if not message %}
+            {{ _('Sorry, no new messages') }}
+            {% else %}
+            <p class="alert alert-info">{{ message }}</p>
+            <p><a href="{{ url_for('getnewmsg', confirm=id) }}">{{ _('Click here to confirm') }}</a></p>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
+
+{# vim: ft=htmldjango
+#}

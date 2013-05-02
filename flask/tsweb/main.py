@@ -1,8 +1,9 @@
 import re, logging, logging.handlers
 import testsys, config, monitor
 from tsweb import decorators, util
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, make_response
 from werkzeug import secure_filename
+from flask.ext.babel import Babel, gettext, refresh
 
 tswebapp = Flask(__name__)
 tswebapp.config.from_object(config)
@@ -12,6 +13,8 @@ fileHandler = logging.handlers.RotatingFileHandler(
     tswebapp.config['LOG_FILENAME'], maxBytes=2**20, backupCount=5)
 fileHandler.setFormatter(fileFormatter)
 tswebapp.logger.addHandler(fileHandler)
+
+babel = Babel(tswebapp)
 
 if tswebapp.config['LOG_TO_EMAIL']:
     smtpFormatter = logging.Formatter('''
@@ -34,6 +37,15 @@ if tswebapp.config['LOG_TO_EMAIL']:
     smtpHandler.setFormatter(smtpFormatter)
     tswebapp.logger.addHandler(smtpHandler)
 
+@babel.localeselector
+def get_locale():
+    if 'lang' in session:
+        return session['lang']
+    else:
+        lang = request.accept_languages.best_match(config.LANGUAGES.keys())
+        session['lang'] = lang
+        return lang
+
 @tswebapp.route('/')
 @tswebapp.route('/index')
 def index():
@@ -51,10 +63,10 @@ def logout():
 @tswebapp.route('/login', methods=['POST'])
 def login():
     if not testsys.valid_teamname(request.form['team']):
-        return render_template("error.html", text="Invalid team name")
+        return render_template("error.html", text=gettext("Invalid team name"))
 
     if not request.form['password']:
-        return render_template("error.html", text="Non-empty password expected")
+        return render_template("error.html", text=gettext("Non-empty password expected"))
 
     state, answer = util.communicate('MSG', {
             'Team': request.form['team'],
@@ -73,7 +85,7 @@ def login():
     session['contestid'] = answer.get('ContestId', '')
     session['team_name'] = answer.get('TeamName', '').decode('cp866')
 
-    return util.redirector(url_for('index'), text="Thank you for logging in, {0}!".format(session['team']))
+    return util.redirector(url_for('index'), text=gettext("Thank you for logging in, {0}!").format(session['team']))
 
 @decorators.channel_user('MSG')
 @decorators.channel_fetcher({
@@ -131,7 +143,7 @@ def get_compilers(ans, id):
 @tswebapp.route('/submit', methods=['GET', 'POST'])
 @decorators.login_required
 @decorators.channel_user('SUBMIT')
-def sumbit(channel):
+def submit(channel):
     try:
         problems, compilers, extensions = get_compilers(channel)
     except testsys.CommunicationException as e:
@@ -154,13 +166,13 @@ def sumbit(channel):
             filename = request.form['prob']
 
         if not data:
-            return util.error("No solution presented")
+            return util.error(gettext("No solution presented"))
 #        if not filepath.split('.')[-1] in extensions:
 #            return error("Invalid file type")
         if not request.form['prob'] in problems:
-            return util.error("Unknown problem '{0}'".format(request.form['prob']))
+            return util.error(gettext("Unknown problem '{0}'").format(request.form['prob']))
         if not compilers[int(request.form.get('lang', '0')) - 1][0] in extensions:
-            return util.error("Unknown compiler '{0}'".format(request.form['lang']))
+            return util.error(gettext("Unknown compiler '{0}'").format(request.form['lang']))
 
         state, answer = util.communicate(channel, {
             'Team': session['team'],
@@ -192,7 +204,7 @@ def monitor_page(ans, ans_id):
 @decorators.login_required
 def changecontest(id):
     session['contestid'] = id
-    return util.redirector(url_for('index'), text="Your contest has been changed to {0}, {1}!".format(id, session['team']))
+    return util.redirector(url_for('index'), text=gettext("Your contest has been changed to {0}, {1}!").format(id, session['team']))
 
 @tswebapp.route('/allsubmits')
 @decorators.login_required
@@ -266,7 +278,13 @@ def viewsubmit(channel, id):
 
     answer, ans_id = answer
 
-    return util.highlight(answer['SubmText'].decode('cp1251'))
+    if request.args.get('raw', ''):
+        resp = make_response(answer['SubmText'].decode('cp1251'))
+        resp.headers['Content-Type'] = 'text/plain'
+        return resp
+    else:
+        css, text = util.highlight(answer['SubmText'].decode('cp1251'))
+        return render_template("viewsubmit.html", css=css, text=text, id=id)
 
 @tswebapp.route('/allsubmits/feedback/<int:id>')
 @decorators.login_required
@@ -320,7 +338,6 @@ def getnewmsg(channel):
     answer, id = answer
     if answer['ID'] == id:
         wtc = int(answer['WaitingCount'])
-        tswebapp.logger.debug('Got wtc: '+str(wtc))
         if wtc == 0:
             return render_template("getnewmsg.html")
         if 'confirm' in request.args:
@@ -328,7 +345,7 @@ def getnewmsg(channel):
             if state == 'error':
                 return answer
             if wtc > 1:
-                return render_template("msg_confirm.html", wtc=wtc - 1)
+                return redirect(url_for("getnewmsg"))
             else:
                 return redirect(url_for("index"))
         else:
@@ -380,6 +397,12 @@ def submit_clar(channel):
         return answer
 
     return render_template("clar_status.html")
+
+@tswebapp.route('/set_language')
+def set_language():
+    session['lang'] = request.args.get('lang', 'en')
+    refresh()
+    return redirect(url_for('index'))
 
 if __name__ == "__main__":
     tswebapp.run(host='0.0.0.0')

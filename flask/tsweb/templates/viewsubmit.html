@@ -1,0 +1,23 @@
+<html>
+    {% set title = _('Submission source') %}
+    {% include "header.html" %}
+    <style type="text/css">
+        {{ css|safe }}
+    </style>
+    <body>
+        <div class="container-fluid">
+            {% include "menu.html" %}
+            <div class="row-fluid">
+                <p class="span12"><a class="btn" href="{{ url_for("viewsubmit", id=id, raw=1) }}">{{ _('Raw') }}</a></p>
+            </div>
+            <div class="row-fluid">
+                <div class="span12">
+                    {{ text|safe }}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
+{# vim: ft=htmldjango
+#}

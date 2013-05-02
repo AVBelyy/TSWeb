@@ -2,11 +2,10 @@
 {% set title = "Redirect page" %}
 {% set class = "subm" %}
 {% include "header.html" %}
-<body class="subm">
+<body>
     <div style="text-align: center;">
         {{ text }}<br />
-        Нажмите <a href="{{ request.script_root }}/index">сюда</a>, если вы не были перенаправлены автоматически
-    </div>
+        <a href="{{ url_for('index') }}">{{ _('Click here if you are not redirected automatically.') }}</div>
 </body>
 </html>
 

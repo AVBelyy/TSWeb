@@ -2,10 +2,11 @@
     {% set title = "TestSys - вопрос отправлен" %}
     {% include "header.html" %}
     <body>
-        {% include "menu.html" %}
-
-        Ваш вопрос отправлен! Решайте задачи дальше! Жюри ответит когда будет время!<br /><hr />
-        <a href="{{ request.script_root }}/clars">Отправить ещё один вопрос</a>&nbsp;&nbsp;
-        <a href="{{ request.script_root }}/index">На главную</a>
+        <div class="container-fluid">
+            {% include "menu.html" %}
+            <div class="row-fluid">
+                <p class="span12">{{ _('Your clarification request has been acknowledged! Good luck!') }}</p>
+            </div>
+        </div>
     </body>
 </html>

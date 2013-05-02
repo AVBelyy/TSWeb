@@ -3,10 +3,9 @@
 .rft    { color: Orange; font-weight: bold }
 .gremph { color: Green; font-style: italic }
 .green  { color: Green; }
-PRE.cmt { font-size: 9pt; }
-/* TR { font-size: 12pt } */
-/* H2 { text-align: center } */
 TR.head { background-color: #EEE }
+TR.for TD { background-color: #FDD }
+TD.for { font-weight: bold; color: Red }
 TR.odd { background-color: #FFB }
 TR.even { background-color: #DEF }
 TD.ok { text-align: center; color: #0A0 }
@@ -15,6 +14,3 @@ TD.no { text-align: center; color: #000; font-weight: bold }
 TD.solv { text-align: center }
 TD.pen { text-align: right }
 TD.rk { text-align: center }
-TD.for { font-weight: bold; color: Red;  background-color: #FDD }
-TR.head A, A.tli { color: Black; text-decoration: none }
-TR.head A:hover, A.tli:hover { color: Brown; text-decoration: underline }
