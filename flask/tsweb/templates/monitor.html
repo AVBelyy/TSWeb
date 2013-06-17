@@ -1,5 +1,5 @@
 <html>
-    {% set title = "Contest Monitor" %}
+    {% set title = _("Contest Monitor") %}
     {% set extcss = "monitor.css" %}
     {% include "header.html" %}
     <body>
@@ -28,10 +28,10 @@
         <tr class="head">
             <th>ID</th>
             <th>{{ _('Team') }}</th>
-            {%- for name, problem in problem_list.items() %}
-            <th width="35"><span data-original-title="{{ problem[0] }}" rel="tooltip">{{ name }}</span></th>
+            {%- for name, problem in problem_list.items()|sort %}
+            <th width="35" class="problem-title"><span data-original-title="{{ problem[0] }}" rel="tooltip">{{ name }}</span></th>
             {%- endfor %}
-            <th width="25">=</th>
+            <th width="25" class="problem-title">=</th>
             <th>{{ _('Time') }}</th>
             <th>{{ _('Rank') }}</th>
         </tr>

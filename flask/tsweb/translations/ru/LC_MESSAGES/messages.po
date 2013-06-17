@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-05-02 23:21+0400\n"
-"PO-Revision-Date: 2013-05-02 23:22+0300\n"
+"POT-Creation-Date: 2013-06-17 17:52+0400\n"
+"PO-Revision-Date: 2013-06-17 17:56+0300\n"
 "Last-Translator: Maxim Koltsov <kolmax94@gmail.com>\n"
 "Language-Team: ru <LL@li.org>\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
@@ -19,31 +19,31 @@ msgstr ""
 "Generated-By: Babel 0.9.6\n"
 "X-Generator: Poedit 1.5.5\n"
 
-#: tsweb/main.py:66
+#: tsweb/main.py:69
 msgid "Invalid team name"
 msgstr "Неверный логин"
 
-#: tsweb/main.py:69
+#: tsweb/main.py:72
 msgid "Non-empty password expected"
 msgstr "Ожидался непустой пароль"
 
-#: tsweb/main.py:88
+#: tsweb/main.py:91
 msgid "Thank you for logging in, {0}!"
 msgstr "Спасибо за вход, {0}!"
 
-#: tsweb/main.py:169
+#: tsweb/main.py:183
 msgid "No solution presented"
 msgstr "Пустое решение"
 
-#: tsweb/main.py:173
+#: tsweb/main.py:187
 msgid "Unknown problem '{0}'"
 msgstr "Неизвестная задача '{0}'"
 
-#: tsweb/main.py:175
+#: tsweb/main.py:189
 msgid "Unknown compiler '{0}'"
 msgstr "Неизвестный компилятор '{0}'"
 
-#: tsweb/main.py:207
+#: tsweb/main.py:221
 msgid "Your contest has been changed to {0}, {1}!"
 msgstr "Ваша тренировка изменилась на {0}, {1}!"
 
@@ -348,6 +348,10 @@ msgstr "Все тренировки"
 #: tsweb/templates/menu.html:15
 msgid "All submissions"
 msgstr "Все отправки"
+
+#: tsweb/templates/monitor.html:2
+msgid "Contest Monitor"
+msgstr "Рейтинг тренировки"
 
 #: tsweb/templates/monitor.html:19
 #, python-format
