@@ -171,11 +171,11 @@ def submit(channel):
     elif request.method == 'POST':
         data = None
         if request.files['file']:
-            data = request.files['file'].read().encode('cp866')
+            data = util.detect_and_convert(request.files['file'].read(), 'cp866')
             filepath = secure_filename(request.files['file'].filename)
             filename = ''.join(filepath.split('.')[:-1])
         if request.form['solution']:
-            data = request.form['solution'].encode('cp866')
+            data = util.detect_and_convert(request.form['solution'], 'cp866')
             filepath = request.form['prob'] + '.' + request.form['lang']
             filename = request.form['prob']
 
@@ -246,7 +246,7 @@ def submits(channel):
             'Time': answer.get('SubmTime_'+str(i), ''),
             'Result': answer.get('SubmRes_'+str(i), ''),
             'Test': answer.get('SubmTest_'+str(i), ''),
-            'CE': answer.get('SubmCE_'+str(i), '').decode('cp866'),
+            'CE': util.detect_and_convert(answer.get('SubmCE_'+str(i))),
             'Attempt': answer.get('SubmAtt_'+str(i), ''),
             'Feedback': answer.get('SubmFeed_'+str(i), ''),
             'Compiler': answer.get('SubmCompiler_'+str(i), ''),

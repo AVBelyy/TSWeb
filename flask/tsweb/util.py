@@ -6,6 +6,7 @@ from pygments.formatters import HtmlFormatter
 from pygments import highlight as p_highlight
 from BeautifulSoup import BeautifulSoup as bs
 from flask.ext.babel import gettext
+from chardet import detect
 
 from tsweb import testsys
 
@@ -114,3 +115,18 @@ def parse_contests(text):
         contest['teams'] = tds[4].getText()
         contests.append(contest)
     return contests
+
+def detect_and_convert(string, target_encoding = None):
+    """Detect encoding in *string* and convert it to *target_encoding*
+    """
+
+    try:
+        encoding = detect(string)['encoding']
+        new_string = string.decode(encoding)
+        print (string, encoding)
+        if target_encoding:
+            return new_string.encode(target_encoding)
+        else:
+            return new_string
+    except:
+        return string # In case of error try to send raw data...
