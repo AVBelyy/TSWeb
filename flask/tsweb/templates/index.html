@@ -32,7 +32,7 @@
         </form>
     </div>
     <div class="row-fluid">
-        <a href="{{ url_for('logout') }}" class="span12">{{ _('Remove all cookies') }}</a>
+        <a href="{{ url_for('logout', purge=1) }}" class="span12">{{ _('Remove all cookies') }}</a>
     </div>
     </div>
 </body>

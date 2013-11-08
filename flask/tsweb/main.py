@@ -61,7 +61,12 @@ def index():
 def logout():
     tm = ', {0}'.format(session['team']) if 'team' in session else ''
     session.pop('team', None)
-    return util.redirector(url_for('index'), text="Thanks for logging out{0}!".format(tm))
+    response = util.redirector(url_for('index'), text="Thanks for logging out{0}!".format(tm))
+    if 'purge' in request.args:
+        session.clear()
+        response.delete_cookie(tswebapp.session_cookie_name)
+
+    return response
 
 @tswebapp.route('/login', methods=['POST'])
 def login():
