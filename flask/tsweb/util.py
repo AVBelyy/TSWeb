@@ -123,7 +123,6 @@ def detect_and_convert(string, target_encoding = None):
     try:
         encoding = detect(string)['encoding']
         new_string = string.decode(encoding)
-        print (string, encoding)
         if target_encoding:
             return new_string.encode(target_encoding)
         else:
