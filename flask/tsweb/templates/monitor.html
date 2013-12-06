@@ -19,7 +19,9 @@
             {{ _('Started at: <b>%(startat)s</b>', startat=startat) }}&nbsp;&nbsp;
             {{ _('Duration: <b>%(duration)s</b>', duration='%d:%02d' % (contlen/60, contlen%60)) }}<br />
             {{ _('State: <b>%(state)s %(mins)s/%(contlen)s</b>', state=state, mins='%.0f' % (now/60), contlen=contlen) }}<br />
+            {%- if not IOI %}
             {{ _('Last success: %(htime)s, team <b>%(team)s</b> &mdash; <b>%(name)s</b>, problem <b>%(problem)s</b>', htime=last_success.htime, team=last_success.team, name=last_success.team_name, problem=last_success.problem) }}<br />
+            {%- endif -%}
             {{ _('Last submission: %(htime)s, team <b>%(team)s</b> &mdash; <b>%(name)s</b>, problem <b>%(problem)s</b>', htime=last_submission.htime, team=last_submission.team, name=last_submission.team_name, problem=last_submission.problem) }}<br />
             <div>
         </div>
@@ -48,22 +50,27 @@
             {% for attempts, score, time, res, test in results[team] -%}
             {%- set succ = False -%}
             {%- set out_time = True -%}
-            <td {% if res == 'OK' %}class="ok" {%- set succ = True -%}{% elif attempts %}class="wa"{% else %}class="no"{% endif %}>
+            {% if res == 'OC' %}
+            <td class="ok">*</td>
+            </td>
+            {% else %}
+            <td {% if res == 'OK' or (IOI and (score or res == '??')) %}class="ok" {%- set succ = True -%}{% elif attempts %}class="wa"{% else %}class="no"{% endif %}>
                 {%- if attempts < 0 %}
-                {{ attempts }}
+                {{ attempts if not IOI else res }}
                 {%- elif attempts-1 > 0 and succ -%}
-                +{{ attempts-1 }}
+                {%- if IOI -%} {{ res }} {% else %} +{{ attempts-1 }} {% endif -%}
                 {%- elif succ -%}
-                +
+                {% if IOI %} {{ res }} {% else %} + {% endif %}
                 {%- else -%}
                 .
                 {%- set out_time = False -%}
                 {%- endif -%}
                 {% if out_time %}<br />{{ '%d:%02d' % (time/3600, (time/60) % 60) -}}{% endif %}
             </td>
+            {% endif %}
             {% endfor -%}
             <td class="solv">{{ solved }}</td>
-            <td class="pen">{{ score // 60 }}</td>
+            <td class="pen">{{ score if IOI else score // 60 }}</td>
             <td class="rk">{{ rank }}</td>
         {%- endif -%}
         {%- endfor %}

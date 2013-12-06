@@ -14,6 +14,9 @@ line_regex = re.compile(r'\@(.+?) (.+)', re.U)
 crlf_regex = re.compile(r'\r?\n')
 date_regex = re.compile(r'\d{2}\.\d{2}\.\d{2,4}\s\d{2}:\d{2}:\d{2}')
 problem_id_regex = re.compile(r'^[A-Za-z0-9_\-]{1,16}$')
+acm_result_regex = re.compile(r'[A-Z][A-Z]')
+ioi_result_1_regex = re.compile(r'(\?\?)|(\-\-)')
+ioi_result_2_regex = re.compile(r'\d{1,3}')
 states = ('BEFORE', 'RUNNING', 'OVER', 'FROZEN', 'RESULTS')
 
 class ParsingError(Exception):
@@ -135,6 +138,8 @@ def gen_monitor(history, data):
             teams[id] = [monclass, monset, name, 0, 0, 0]
 
         submissions = []
+        IOI = 0
+        IOIScores = 0
         for i in xrange(config['submissions']):
             s, submission = commands.pop(0)
             if s != 's':
@@ -147,15 +152,39 @@ def gen_monitor(history, data):
             else:
                 test = 0
 
-            if result == 'OK' and test != 0:
-                tsweb.main.tswebapp.logger.error(
-                    "Test number not expected for OK result")
+            mode = 0
+            if acm_result_regex.match(result):
+                mode = -1
+            elif ioi_result_1_regex.match(result):
+                mode = 1
+            elif ioi_result_2_regex.match(result):
+                mode = 1
+                IOIScores = 1
+
+            if not IOI:
+                IOI = mode
+
+            if not mode:
+                tsweb.tswebapp.logger.error(
+                    "Invalid result code {}".format(result))
                 raise ParsingError("Bad monitor format")
+
+            if mode != IOI:
+                tsweb.tswebapp.logger.error("Mixed acm/ioi monitor")
+                raise ParsingError("Bad monitor format")
+
+            if (result == 'OK' or result == "OC" or (IOI > 0 and result != "--")) and test != 0:
+                tsweb.main.tswebapp.logger.error(
+                    "Test number not expected for OK/OC result or IOI monitor")
+                tsweb.main.tswebapp.logger.debug("{}".format(submission))
 
             submissions.append({'team': team, 'problem': problem,
                 'attempt': attempt, 'time': time, 'result': result,
                 'htime': '%d:%02d:%02d' % (time/3600, (time/60) % 60, time % 60),
                 'test': test, 'team_name': teams[team][2]})
+
+        if IOI < 0:
+            IOI = 0
 
         TeamsResults = {}
         accepted_counters = dict(zip(problems.keys(), [0]*len(problems)))
@@ -178,22 +207,37 @@ def gen_monitor(history, data):
                 if not subs:
                     result = (0, 0, 0, '', 0)
                 else:
+                    ioi_cutoff = len(subs)
                     for i, sub in enumerate(subs):
-                        if sub['result'] == 'OK':
+                        if sub['result'] in ('OK', 'OC'):
                             del subs[i+1:]
                             break
+                        if sub['result'] != '--':
+                            ioi_cutoff = i
+
+                    if IOI:
+                        del subs[ioi_cutoff+1:]
 
                     sub = subs[-1]
                     attempts = len(subs)
                     #Format of result: (+-attempts, score, time, result, test number)
-                    if sub['result'] == 'OK':
-                        result = (attempts,
-                            problems[problem][1] * 60 * (attempts-1) + sub['time'],
-                            sub['time'], sub['result'], 0)
+                    if sub['result'] == 'OC':
+                        result = (1, 0, sub['time'], sub['result'], 0)
+                    elif IOI:
+                        if sub['result'] != '--':
+                            result = (attempts, int(sub['result']), sub['time'], sub['result'], 0)
+                        else:
+                            result = (-attempts, 0, sub['time'], sub['result'], 0)
                     else:
-                        result = (-attempts,
-                            problems[problem][2] * 60 * attempts, sub['time'],
-                            sub['result'], sub['test'])
+                        if sub['result'] == 'OK':
+                            result = (attempts,
+                                problems[problem][1] * 60 * (attempts-1) + sub['time'],
+                                sub['time'], sub['result'], 0)
+                        else:
+                            result = (-attempts,
+                                problems[problem][2] * 60 * attempts, sub['time'],
+                                sub['result'], sub['test'])
+
                     #Increase proper counters for team
                     if result[0] > 0:
                         teams[team][3] += 1 #solved counter
@@ -212,22 +256,29 @@ def gen_monitor(history, data):
 
         active_teams.sort(key = lambda x: x[1])
 
-        #Sort teams by id (third key)
-        teams_order = sorted(teams)
-        #Then by scores (secondary key)
-        teams_order = sorted(teams_order, key=lambda x: teams[x][4])
-        #And by attempts (primary key)
-        teams_order = sorted(teams_order, key=lambda x: teams[x][3], reverse=1)
+        if IOI:
+            teams_order = sorted(teams, key=lambda x: teams[x][3 if IOIScores else 4], reverse=1)
+        else:
+            #Sort teams by id (third key)
+            teams_order = sorted(teams)
+            #Then by scores (secondary key)
+            teams_order = sorted(teams_order, key=lambda x: teams[x][4])
+            #And by attempts (primary key)
+            teams_order = sorted(teams_order, key=lambda x: teams[x][3], reverse=1)
 
-        #Assign ranks to teams
-        rank = 1
+        #Assing ranks
+        rank = 0
+        solved = -1
+        score = -1
         for team in teams_order:
-            teams[team][5] = rank
-            #If team has solved some task, next team's rank will increase,
-            #otherwise it'll be same
-            if teams[team][3]:
+            #Rank is not increased only if this team has the same score and
+            #solved count as the previous one
+            if not (teams[team][4] == score and
+                    (IOIScores or teams[team][3] == solved)):
                 rank += 1
-                #active_teams.append((team, teams[team][2]))
+            teams[team][5] = rank
+            solved = teams[team][3]
+            score = teams[team][4]
 
         config['teams_list'] = [((i,)+tuple(teams[i])) for i in teams_order]
         config['active_teams'] = active_teams
@@ -237,6 +288,7 @@ def gen_monitor(history, data):
         config['rejects'] = rejected_counters
         config['total_accepts'] = sum(accepted_counters.itervalues())
         config['total_rejects'] = sum(rejected_counters.itervalues())
+        config['IOI'] = IOI == 1
 
         if len(submissions) > 0:
             succ = filter(
