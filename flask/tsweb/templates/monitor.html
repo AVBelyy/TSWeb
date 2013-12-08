@@ -65,7 +65,7 @@
                 .
                 {%- set out_time = False -%}
                 {%- endif -%}
-                {% if out_time %}<br />{{ '%d:%02d' % (time/3600, (time/60) % 60) -}}{% endif %}
+                {% if out_time and not IOI %}<br />{{ '%d:%02d' % (time/3600, (time/60) % 60) -}}{% endif %}
             </td>
             {% endif %}
             {% endfor -%}

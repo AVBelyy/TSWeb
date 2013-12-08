@@ -225,7 +225,7 @@ def gen_monitor(history, data):
                         result = (1, 0, sub['time'], sub['result'], 0)
                     elif IOI:
                         if sub['result'] != '--':
-                            result = (attempts, int(sub['result']), sub['time'], sub['result'], 0)
+                            result = (attempts, '??' if sub['result'] == '??' else int(sub['result']), sub['time'], sub['result'], 0)
                         else:
                             result = (-attempts, 0, sub['time'], sub['result'], 0)
                     else:
@@ -246,7 +246,8 @@ def gen_monitor(history, data):
                         rejected_counters[problem] += attempts-1
                     else:
                         rejected_counters[problem] += attempts
-                    teams[team][4] += result[1] #scores counter
+                    if IOIScores and result[1] != '??':
+                        teams[team][4] += result[1] #scores counter
                 results.append(result)
                 if result != (0, 0, 0, '', 0):
                     active_team = True
@@ -257,7 +258,12 @@ def gen_monitor(history, data):
         active_teams.sort(key = lambda x: x[1])
 
         if IOI:
-            teams_order = sorted(teams, key=lambda x: teams[x][3 if IOIScores else 4], reverse=1)
+            #Sort teams by id
+            teams_order = sorted(teams)
+            #Sort teams by score or solved count
+            teams_order = sorted(teams_order,
+                                 key=lambda x: teams[x][4 if IOIScores else 3],
+                                 reverse=1)
         else:
             #Sort teams by id (third key)
             teams_order = sorted(teams)
