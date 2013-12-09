@@ -19,7 +19,7 @@
             {%- for contest in contests %}
             <tr>
                 <td><a href="{{ url_for('changecontest', id=contest['id']) }}">{{ contest['id'] }}</a></td>
-                <td><a href="{{ contest['statements'] }}">{{ contest['name'] }}</a></td>
+                <td>{%- if contest['statements'] -%}<a href="{{ contest['statements'] }}">{{ contest['name'] }}</a>{%- else -%}{{ contest['name'] }}{%- endif -%}</td>
                 <td>{{ contest['state'] }}</td>
                 <td>{{ contest['startedat'] }}</td>
                 <td>{{ contest['teams'] }}</td>

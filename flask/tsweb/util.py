@@ -107,8 +107,11 @@ def parse_contests(text):
         contest = {}
         tds = row('td')
         contest['id'] = tds[0].getText()
-        link = tds[1]('a')[0]
-        contest['statements'] = link['href']
+        if tds[1]('a'):
+            link = tds[1]('a')[0]
+            contest['statements'] = link['href']
+        else:
+            contest['statements'] = ''
         contest['name'] = link.getText()
         contest['state'] = tds[2].getText()
         contest['startedat'] = tds[3].getText()
