@@ -134,8 +134,8 @@ def gen_monitor(history, data):
                 tsweb.main.tswebapp.logger.error("Invalid monclass or monset: \
 '{0}, {1}'".format(monclass, monset))
 
-            #Fields 3, 4 and 5 are prepared for future solved, score and rank counter
-            teams[id] = [monclass, monset, name, 0, 0, 0]
+            #Fields 3, 4, 5 and 6 are prepared for future solved, score, rank counters and table row classifier
+            teams[id] = [monclass, monset, name, 0, 0, 0, 0]
 
         submissions = []
         IOI = 0
@@ -274,15 +274,21 @@ def gen_monitor(history, data):
 
         #Assing ranks
         rank = 0
+        straight_rank = 0
+        prob = 0
         solved = -1
         score = -1
-        for team in teams_order:
+        for i, team in enumerate(teams_order):
             #Rank is not increased only if this team has the same score and
             #solved count as the previous one
+            if teams[team][3] != solved:
+                prob += 1
             if not (teams[team][4] == score and
                     (IOIScores or teams[team][3] == solved)):
-                rank += 1
+                rank = i + 1
+                straight_rank += 1
             teams[team][5] = rank
+            teams[team][6] = straight_rank if IOIScores else prob
             solved = teams[team][3]
             score = teams[team][4]
 
