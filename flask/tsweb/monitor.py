@@ -246,6 +246,9 @@ def gen_monitor(history, data):
                         rejected_counters[problem] += attempts-1
                     else:
                         rejected_counters[problem] += attempts
+
+                    if not IOI:
+                        teams[team][4] += result[1] #time for ACM rules contests
                     if IOIScores and result[1] != '??':
                         teams[team][4] += result[1] #scores counter
                 results.append(result)
