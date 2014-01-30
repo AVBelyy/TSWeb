@@ -232,8 +232,8 @@ def submit(channel):
 @decorators.channel_user('MONITOR')
 @decorators.channel_fetcher(auth=True)
 def monitor_page(ans, ans_id):
-   config = monitor.gen_monitor(ans['History'], ans['Monitor'])
-   return render_template("monitor.html", **config)
+    config = monitor.gen_monitor(ans['History'], ans['Monitor'])
+    return render_template("monitor.html", **config)
 
 @tswebapp.route('/contest/<id>')
 @decorators.login_required

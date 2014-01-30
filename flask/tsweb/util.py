@@ -54,7 +54,7 @@ def communicate(chan, request=None, check_empty=True):
     if isinstance(chan, testsys.Channel):
         channel = chan
         need_close = False
-        if not channel.sock: #Because of race conditions channel can be closed. Let's open it
+        if not channel.sock:  # Because of race conditions channel can be closed. Let's open it
             try:
                 channel.open(1)
             except testsys.ConnectionFailedException as ex:
@@ -119,7 +119,7 @@ def parse_contests(text):
         contests.append(contest)
     return contests
 
-def detect_and_convert(string, target_encoding = None):
+def detect_and_convert(string, target_encoding=None):
     """Detect encoding in *string* and convert it to *target_encoding*
     """
 
@@ -131,4 +131,4 @@ def detect_and_convert(string, target_encoding = None):
         else:
             return new_string
     except:
-        return string # In case of error try to send raw data...
+        return string  # In case of error try to send raw data...

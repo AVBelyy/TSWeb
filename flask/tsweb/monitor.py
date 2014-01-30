@@ -127,7 +127,7 @@ def gen_monitor(history, data):
 
             # remove double quotes from name (if needed)
             if name.startswith('"') and name.endswith('"'):
-               name = name[1:-1]
+                name = name[1:-1]
 
             if not problem_id_regex.match(id):
                 tsweb.main.tswebapp.logger.error(
@@ -198,7 +198,7 @@ def gen_monitor(history, data):
 
         TeamsResults = {}
         accepted_counters = dict(zip(problems.keys(), [0]*len(problems)))
-        rejected_counters =  dict(zip(problems.keys(), [0]*len(problems)))
+        rejected_counters = dict(zip(problems.keys(), [0]*len(problems)))
 
         active_teams = []
         for team in teams:
@@ -250,14 +250,14 @@ def gen_monitor(history, data):
 
                     #Increase proper counters for team
                     if result[0] > 0:
-                        teams[team][3] += 1 #solved counter
+                        teams[team][3] += 1  # solved counter
                         #Set global statistic counters
                         accepted_counters[problem] += 1
                         rejected_counters[problem] += attempts-1
                     else:
                         rejected_counters[problem] += attempts
                     if IOIScores and result[1] != '??':
-                        teams[team][4] += result[1] #scores counter
+                        teams[team][4] += result[1]  # scores counter
                 results.append(result)
                 if result != (0, 0, 0, '', 0):
                     active_team = True
@@ -265,7 +265,7 @@ def gen_monitor(history, data):
                 TeamsResults[team] = results
                 active_teams.append((team, teams[team][2]))
 
-        active_teams.sort(key = lambda x: x[1])
+        active_teams.sort(key=lambda x: x[1])
 
         if IOI:
             #Sort teams by id
@@ -316,15 +316,15 @@ def gen_monitor(history, data):
             succ = filter(
                 lambda x: True if x['result'] == 'OK' or x['result'] == 'OC' else False,
                 sorted(submissions, key=lambda y: y['time'], reverse=1))
-            if succ==[]:
-               config['last_success'] = None
+            if succ == []:
+                config['last_success'] = None
             else:
-               config['last_success'] = succ[0]
-            config['last_submission'] = sorted(submissions,
-	            key=lambda x: x['time'], reverse=1)[0]
+                config['last_success'] = succ[0]
+                config['last_submission'] = sorted(submissions,
+                key=lambda x: x['time'], reverse=1)[0]
         else:
-	        config['last_success'] = None
-	        config['last_submission'] = None
+            config['last_success'] = None
+            config['last_submission'] = None
     except ParsingError as e:
         config = {'error': e.message}
     return config
