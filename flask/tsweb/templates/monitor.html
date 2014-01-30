@@ -34,7 +34,7 @@
             <th width="35" class="problem-title"><span data-original-title="{{ problem[0] }}" rel="tooltip">{{ name }}</span></th>
             {%- endfor %}
             <th width="25" class="problem-title">=</th>
-            <th>{{ _('Time') }}</th>
+            <th>{{ _('Time' if not IOI else 'Score') }}</th>
             <th>{{ _('Rank') }}</th>
         </tr>
         {% set class = 'odd' %}

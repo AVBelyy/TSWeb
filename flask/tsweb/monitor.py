@@ -96,7 +96,10 @@ def gen_monitor(history, data):
         for i in xrange(config['problems']):
             p, problem = commands.pop(0)
             if p != 'p':
-                raise ParsingError('Insufficient problem count')
+                tsweb.main.tswebapp.logger.error(
+                    "Expected problem {} of {}, got '{} {}",
+                    i, config['problems'], p, problem)
+                continue
             id, name, p1, p2 = problem
             if not problem_id_regex.match(id):
                 tsweb.main.tswebapp.logger.error(
@@ -115,7 +118,10 @@ def gen_monitor(history, data):
         for i in xrange(config['teams']):
             t, team = commands.pop(0)
             if t != 't':
-                raise ParsingError("Insufficient team count")
+                tsweb.main.tswebapp.logger.error(
+                    "Expected team {} of {}, got '{} {}",
+                    i, config['teams'], t, team)
+                continue
 
             id, monclass, monset, name = team
 
@@ -143,7 +149,11 @@ def gen_monitor(history, data):
         for i in xrange(config['submissions']):
             s, submission = commands.pop(0)
             if s != 's':
-                raise ParsingError("Insufficient submission count")
+                tsweb.main.tswebapp.logger.error(
+                    "Expected submission {} of {}, got '{} {}",
+                    i, config['submissions'], s, submission)
+                continue
+
             team, problem, attempt, time, result = submission[:5]
             attempt = int(attempt)
             time = int(time)
@@ -165,12 +175,12 @@ def gen_monitor(history, data):
                 IOI = mode
 
             if not mode:
-                tsweb.tswebapp.logger.error(
+                tsweb.main.tswebapp.logger.error(
                     "Invalid result code {}".format(result))
                 raise ParsingError("Bad monitor format")
 
             if mode != IOI:
-                tsweb.tswebapp.logger.error("Mixed acm/ioi monitor")
+                tsweb.main.tswebapp.logger.error("Mixed acm/ioi monitor")
                 raise ParsingError("Bad monitor format")
 
             if (result == 'OK' or result == "OC" or (IOI > 0 and result != "--")) and test != 0:

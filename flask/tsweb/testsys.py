@@ -164,7 +164,8 @@ class Channel():
         try:
             buff = self.sock.recv(655360)
         except IOError as e:
-            if e.errno == errno.EAGAIN:
+            # 10035 is WSAEWOULDBLOCK, Windows EAGAIN variant
+            if e.errno in (errno.EAGAIN, 10035):
                 main.tswebapp.logger.debug(
                     "Non-blocking operation on not ready socket")
                 return

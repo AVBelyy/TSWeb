@@ -19,13 +19,29 @@ tswebapp.logger.addHandler(fileHandler)
 
 babel = Babel(tswebapp)
 
+class TswebFormatter(logging.Formatter):
+    """Special formatter that adds team and contest id to LogRecord"""
+
+    def format(self, record):
+        try:
+            record.team = session.get('team', '??')
+            record.contestid = session.get('contestid', '??')
+        except:
+            # Suppress potential erorrs from Flask or others
+            record.team = '??'
+            record.contestid = '??'
+
+        return super(TswebFormatter, self).format(record)
+
 if tswebapp.config['LOG_TO_EMAIL']:
-    smtpFormatter = logging.Formatter('''
+    smtpFormatter = TswebFormatter('''
     Message type:       %(levelname)s
     Location:           %(pathname)s:%(lineno)d
     Module:             %(module)s
     Function:           %(funcName)s
     Time:               %(asctime)s
+    Team:               %(team)s
+    Contest ID:         %(contestid)s
 
     Message:
 
@@ -244,7 +260,7 @@ def submits(channel):
 
     submissions = []
     feed, score, team, tl, ml = False, False, False, False, False
-    for i in xrange(int(answer['Submits'])):
+    for i in xrange(int(answer.get('Submits', ''))):
         res = {
             'Problem': answer.get('SubmProb_'+str(i), ''),
             'ID': answer.get('SubmID_'+str(i), ''),
@@ -321,7 +337,9 @@ def feedback(channel, id):
 
     answer, ans_id = answer
 
-    return render_template("feedback.html", hdr=answer['FeedbackAddHeader'], feedback=answer['Feedback'].decode('cp1251'), id=id)
+    return render_template("feedback.html", hdr=answer.get('FeedbackAddHeader', ''),
+                           feedback=util.detect_and_convert(answer.get('Feedback')),
+                           id=id)
 
 @tswebapp.route('/contests')
 @decorators.login_required
@@ -379,7 +397,7 @@ def getnewmsg(channel):
         wtc = 0
         id = answer['ID']
 
-    return render_template("getnewmsg.html", message=answer['Message'].decode('cp1251'), id=id)
+    return render_template("getnewmsg.html", message=answer.get('Message', '').decode('cp1251'), id=id)
 
 @tswebapp.route('/clars')
 @decorators.login_required
