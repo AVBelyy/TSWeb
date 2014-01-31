@@ -323,7 +323,7 @@ def gen_monitor(history, data):
                 config['last_success'] = None
             else:
                 config['last_success'] = succ[0]
-                config['last_submission'] = sorted(submissions,
+            config['last_submission'] = sorted(submissions,
                 key=lambda x: x['time'], reverse=1)[0]
         else:
             config['last_success'] = None
