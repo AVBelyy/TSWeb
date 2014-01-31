@@ -8,7 +8,7 @@ from BeautifulSoup import BeautifulSoup as bs
 from flask.ext.babel import gettext
 from chardet import detect
 
-from tsweb import testsys
+from . import testsys
 
 def redirector(url, **kwargs):
     """Render custom redirection (HTTP 302) response, passing *kwargs* to

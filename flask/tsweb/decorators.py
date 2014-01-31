@@ -3,7 +3,7 @@ from flask import session
 from functools import wraps
 from copy import copy
 
-from tsweb import util, testsys
+from . import util, testsys
 
 def login_required(f):
     """

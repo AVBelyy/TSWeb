@@ -1,60 +1,13 @@
 
 # -*- coding: utf8; -*-
 
-import re, logging, logging.handlers
-import testsys, config, monitor
-from tsweb import decorators, util
+import re
+from . import testsys, config, monitor, decorators, util
+from .app import tswebapp, babel
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
 from werkzeug import secure_filename
 from flask.ext.babel import Babel, gettext, refresh
 
-tswebapp = Flask(__name__)
-tswebapp.config.from_object(config)
-tswebapp.logger.setLevel(tswebapp.config['LOG_LEVEL'])
-fileFormatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
-fileHandler = logging.handlers.RotatingFileHandler(
-    tswebapp.config['LOG_FILENAME'], maxBytes=2**20, backupCount=5)
-fileHandler.setFormatter(fileFormatter)
-tswebapp.logger.addHandler(fileHandler)
-
-babel = Babel(tswebapp)
-
-class TswebFormatter(logging.Formatter):
-    """Special formatter that adds team and contest id to LogRecord"""
-
-    def format(self, record):
-        try:
-            record.team = session.get('team', '??')
-            record.contestid = session.get('contestid', '??')
-        except:
-            # Suppress potential erorrs from Flask or others
-            record.team = '??'
-            record.contestid = '??'
-
-        return super(TswebFormatter, self).format(record)
-
-if tswebapp.config['LOG_TO_EMAIL']:
-    smtpFormatter = TswebFormatter('''
-    Message type:       %(levelname)s
-    Location:           %(pathname)s:%(lineno)d
-    Module:             %(module)s
-    Function:           %(funcName)s
-    Time:               %(asctime)s
-    Team:               %(team)s
-    Contest ID:         %(contestid)s
-
-    Message:
-
-    %(message)s
-    ''')
-    smtpHandler = logging.handlers.SMTPHandler((tswebapp.config['SMTP_SERVER'], tswebapp.config['SMTP_PORT']),
-                                                tswebapp.config['EMAIL_FROM'],
-                                                tswebapp.config['LOG_EMAILS'],
-                                                'TSWeb log',
-                                                (tswebapp.config['EMAIL_FROM'], tswebapp.config['EMAIL_PASSWORD']),
-                                                tuple())
-    smtpHandler.setFormatter(smtpFormatter)
-    tswebapp.logger.addHandler(smtpHandler)
 
 @babel.localeselector
 def get_locale():
@@ -122,7 +75,7 @@ def format_main_page(ans, ans_id):
     config['statements'] = ans.get('StatementsLink', '')
     config['contlist_mask'] = tswebapp.config['CONTLIST_MASK']
     if tswebapp.config['PUN']:
-        config['messages'] = map(mangle_result, re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251')))
+        config['messages'] = [mangle_result(msg) for msg in re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251'))]
     else:
         config['messages'] = re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251'))
     config['version'] = ans.get('Version', 0)
