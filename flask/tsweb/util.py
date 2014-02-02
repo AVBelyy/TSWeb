@@ -112,7 +112,7 @@ def parse_contests(text):
             contest['statements'] = link['href']
         else:
             contest['statements'] = ''
-        contest['name'] = link.getText()
+        contest['name'] = tds[1].getText()
         contest['state'] = tds[2].getText()
         contest['startedat'] = tds[3].getText()
         contest['teams'] = tds[4].getText()
