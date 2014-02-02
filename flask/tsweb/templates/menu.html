@@ -12,7 +12,7 @@
             {%- if statements %}<li><a href="{{ statements }}">{{ _('Statements') }}</a></li>{% endif -%}
             {%- if printsol %}<li><a href="#">{{ _('Print solution') }}</a></li>{% endif -%}
             {%- if contlist_mask %}<li><a href="{{ url_for('contests', mask=contlist_mask) }}">{{ _('All contests') }}</a></li>{% endif -%}
-            {%- if jury %}<li><a href="{{ url_for('submits', all='1') }}">{{ _('All submissions') }}</a></li>{% endif -%}
+           <!-- {%- if jury %}<li><a href="{{ url_for('submits', all='1') }}">{{ _('All submissions') }}</a></li>{% endif -%} -->
             <li><a href="{{ url_for('logout') }}">{{ _('Log out') }}</a></li>
         </ul>
     </div>
