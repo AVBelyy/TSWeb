@@ -6,7 +6,7 @@
     {% if extcss %}
     <link href="{{ url_for('static', filename=extcss) }}" rel="stylesheet" type="text/css">
     {% endif %}
-    <script src="http://yandex.st/jquery/1.9.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
     <script>
         $(function () {
