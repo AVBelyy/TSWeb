@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 import os, logging
@@ -15,6 +14,7 @@ DEBUG = config.getboolean('General', 'debug')
 PRINTSOL = config.get('General', 'printsol')
 CONTLIST_MASK = config.get('General', 'contlist_mask')
 PUN = config.getboolean('General', 'pun')
+internet = config.getboolean('General', 'internet')
 
 TESTSYS_HOST = config.get('Testsys', 'host')
 TIMEOUT = config.getfloat('Testsys', 'timeout')
