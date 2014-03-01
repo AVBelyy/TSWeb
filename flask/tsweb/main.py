@@ -338,7 +338,7 @@ def feedback(channel, id):
     answer, ans_id = answer
 
     return render_template("feedback.html", hdr=answer.get('FeedbackAddHeader', ''),
-                           feedback=util.detect_and_convert(answer.get('Feedback')),
+                           feedback=util.detect_and_convert(answer.get('Feedback').decode('cp1251')),
                            id=id)
 
 @tswebapp.route('/contests')
