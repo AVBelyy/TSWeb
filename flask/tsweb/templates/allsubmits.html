@@ -78,12 +78,14 @@
         {% set class = "fok" %}
         {%- elif sub['Result'] in ('WA', 'PE', 'CE', 'RE', 'RT', 'SV') -%}
         {%- set class = "fwa" %}
-        {%- elif sub['Result'] in ('TL', 'ML') -%}
+        {%- elif sub['Result'] in ('TL', 'ML', 'IL') -%}
         {%- set class = "fle" %}
         {%- elif sub['Result'] == 'PC' -%}
         {%- set class = "fpc" %}
         {%- elif sub['Result'] in ('JE', 'FT') -%}
         {%- set class = "fje" %}
+        {%- elif sub['Result'] in ('NO') -%}
+        {%- set class = "fno" %}
         {% endif -%}
         <tr class="{{ class }}" data-result="{{ sub['Result'] }}" data-prob="{{ sub['Problem'] }}" data-team="{{ sub['Team'][:2] }}">
             <td>{{ sub['ID'] }}</td>
