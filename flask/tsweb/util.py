@@ -4,7 +4,7 @@ from flask import redirect, render_template
 from pygments.lexers import guess_lexer
 from pygments.formatters import HtmlFormatter
 from pygments import highlight as p_highlight
-from BeautifulSoup import BeautifulSoup as bs
+from bs4 import BeautifulSoup as bs
 from flask.ext.babel import gettext
 from chardet import detect
 
@@ -35,7 +35,7 @@ def testsys_error(msg):
             else gettext("TestSys reports unknown error"),
         title=gettext("TestSys error"))
 
-def communicate(chan, request=None, check_empty=True):
+def communicate(chan, request=None, check_empty=True, encoding='cp866'):
     """Send request to testsys and get response. It returns tuple (state, answer),
     where *state* can be 'error' or 'ok. If state == 'error', *answer* contains
     formatted error message. If state == 'ok', answer contains tuple (answer, id).
@@ -69,13 +69,13 @@ def communicate(chan, request=None, check_empty=True):
 
     if request:
         try:
-            ans_id = channel.send(request)
+            ans_id = channel.send(request, encoding=encoding)
         except testsys.CommunicationException as ex:
             return ('error', error(ex.message))
     else:
         ans_id = 0
 
-    answer = channel.recv()
+    answer = channel.recv(encoding=encoding)
     if not answer and check_empty:
         return ('error', error(gettext("Empty response from testsys")))
     if 'Error' in answer:
@@ -122,6 +122,9 @@ def parse_contests(text):
 def detect_and_convert(string, target_encoding=None):
     """Detect encoding in *string* and convert it to *target_encoding*
     """
+
+    if not string:
+        return ''
 
     try:
         encoding = detect(string)['encoding']

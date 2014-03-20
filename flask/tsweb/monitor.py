@@ -3,6 +3,7 @@ dictionaries and lists"""
 
 import re
 from .app import tswebapp
+from .compat import xrange
 
 command_regex = re.compile(r"""
 (?<!\\)" #match opening quot, unless it's escaped
@@ -37,17 +38,17 @@ def gen_monitor(history, data):
     """Generate config suitable for monitor.html template from raw history and
     monitor data"""
     if data and not history:
-        return {'pre': data.decode('cp866')}
+        return {'pre': data}
 
-    history = crlf_regex.split(history.decode('cp1251').strip())
+    history = crlf_regex.split(history.strip())
     #Order of commands in valid monitor
     #Format: (name, converter, checker)
     command_order = [
         ('contest', lambda x: x.replace('"', ''), lambda x: True),
-        ('startat', unicode, date_regex.match),
+        ('startat', str, date_regex.match),
         ('contlen', int, lambda x: True),
         ('now', int, lambda x: True),
-        ('state', unicode, lambda x: x in states),
+        ('state', str, lambda x: x in states),
         ('freeze', int, lambda x: True),
         ('problems', int, lambda x: True),
         ('teams', int, lambda x: True),
@@ -309,8 +310,8 @@ def gen_monitor(history, data):
         config['problem_list'] = (problems)
         config['accepts'] = accepted_counters
         config['rejects'] = rejected_counters
-        config['total_accepts'] = sum(accepted_counters.itervalues())
-        config['total_rejects'] = sum(rejected_counters.itervalues())
+        config['total_accepts'] = sum(accepted_counters.values())
+        config['total_rejects'] = sum(rejected_counters.values())
         config['IOI'] = IOI == 1
 
         if len(submissions) > 0:

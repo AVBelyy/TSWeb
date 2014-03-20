@@ -4,6 +4,7 @@
 import re
 from . import testsys, config, monitor, decorators, util
 from .app import tswebapp, babel
+from .compat import xrange
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
 from werkzeug import secure_filename
 from flask.ext.babel import Babel, gettext, refresh
@@ -60,7 +61,7 @@ def login():
     session['team'] = request.form['team']
     session['password'] = request.form['password']
     session['contestid'] = answer.get('ContestId', '')
-    session['team_name'] = answer.get('TeamName', '').decode('cp866')
+    session['team_name'] = answer.get('TeamName', '')
 
     return util.redirector(url_for('index'), text=gettext("Thank you for logging in, {0}!").format(session['team']))
 
@@ -74,17 +75,23 @@ def format_main_page(ans, ans_id):
     config['jury'] = ans.get('JuryMode', False)
     config['statements'] = ans.get('StatementsLink', '')
     config['contlist_mask'] = tswebapp.config['CONTLIST_MASK']
+
+    # TestSys is rather inconsistent with its encodings, so we need to recode
+    # here
     if tswebapp.config['PUN']:
-        config['messages'] = [mangle_result(msg) for msg in re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251'))]
+        config['messages'] = [mangle_result(msg) for msg in re.split('\r?\n',
+            ans.get('AllMessages', '').encode('cp866').decode('cp1251'))]
     else:
-        config['messages'] = re.split('\r?\n', ans.get('AllMessages', '').decode('cp1251'))
+        config['messages'] = re.split('\r?\n',
+            ans.get('AllMessages', '').encode('cp866').decode('cp1251'))
+
     config['version'] = ans.get('Version', 0)
     config['contid'] = ans.get('ContestId', '')
-    config['contname'] = ans.get('ContestName', '').decode('cp866')
+    config['contname'] = ans.get('ContestName', '')
     config['contest_start'] = ans.get('ContestStart', '00:00:00')
     config['contest_duration'] = ans.get('ContestDuration', '00:00:00')
     config['server_now'] = ans.get('ServerNow', '00:00:00')
-    session['team_name'] = ans.get('TeamName', session['team']).decode('cp866')
+    session['team_name'] = ans.get('TeamName', session['team'])
 
     return render_template("main.html", **config)
 
@@ -100,7 +107,7 @@ def mangle_result(string):
 def get_compilers(ans, id):
     pmode = 0
     compilers, problems, extensions = [], {}, {}
-    data = ans['Data'].decode('cp866')
+    data = ans['Data']
     for line in re.split('\r?\n', data):
         match = re.match('VERSION=(.*)', line)
         if match:
@@ -145,11 +152,11 @@ def submit(channel):
     elif request.method == 'POST':
         data = None
         if request.files['file']:
-            data = util.detect_and_convert(request.files['file'].read(), 'cp866')
+            data = util.detect_and_convert(request.files['file'].read())
             filepath = secure_filename(request.files['file'].filename)
             filename = ''.join(filepath.split('.')[:-1])
         if request.form['solution']:
-            data = util.detect_and_convert(request.form['solution'], 'cp866')
+            data = util.detect_and_convert(request.form['solution'])
             filepath = request.form['prob'] + '.' + request.form['lang']
             filename = request.form['prob']
 
@@ -183,7 +190,7 @@ def submit(channel):
 @tswebapp.route('/monitor')
 @decorators.login_required
 @decorators.channel_user('MONITOR')
-@decorators.channel_fetcher(auth=True)
+@decorators.channel_fetcher(auth=True, encoding='cp1251')
 def monitor_page(ans, ans_id):
     config = monitor.gen_monitor(ans['History'], ans['Monitor'])
     return render_template("monitor.html", **config)
@@ -220,13 +227,15 @@ def submits(channel):
             'Time': answer.get('SubmTime_'+str(i), ''),
             'Result': answer.get('SubmRes_'+str(i), ''),
             'Test': answer.get('SubmTest_'+str(i), ''),
-            'CE': util.detect_and_convert(answer.get('SubmCE_'+str(i))),
+            # Encode back to let chardet guess
+            'CE': util.detect_and_convert(
+                answer.get('SubmCE_'+str(i), '').encode('cp866')),
             'Attempt': answer.get('SubmAtt_'+str(i), ''),
             'Feedback': answer.get('SubmFeed_'+str(i), ''),
             'Compiler': answer.get('SubmCompiler_'+str(i), ''),
             'TokenUsed': answer.get('SubmTokenUsed_'+str(i), ''),
             'Score': answer.get('SubmScore_'+str(i), ''),
-            'Team': answer.get('SubmTeam_'+str(i), '').decode('cp866'),
+            'Team': answer.get('SubmTeam_'+str(i), ''),
             'TL': answer.get('SubmTL_'+str(i), ''),
             'ML': answer.get('SubmML_'+str(i), '')}
         if res['Feedback']:
@@ -267,11 +276,11 @@ def viewsubmit(channel, id):
     answer, ans_id = answer
 
     if request.args.get('raw', ''):
-        resp = make_response(answer['SubmText'].decode('cp1251'))
+        resp = make_response(util.detect_and_convert(answer['SubmText'].encode('cp866')))
         resp.headers['Content-Type'] = 'text/plain'
         return resp
     else:
-        css, text = util.highlight(answer['SubmText'].decode('cp1251'))
+        css, text = util.highlight(util.detect_and_convert(answer['SubmText'].encode("cp866")))
         return render_template("viewsubmit.html", css=css, text=text, id=id)
 
 @tswebapp.route('/allsubmits/feedback/<int:id>')
@@ -309,7 +318,7 @@ def contests(channel):
         return answer
 
     answer, ans_id = answer
-    contests = util.parse_contests(answer['Contests'].decode('cp866'))
+    contests = util.parse_contests(answer['Contests'])
     return render_template("contests.html", contests=contests)
 
 @tswebapp.route('/getnewmsg')
@@ -320,7 +329,8 @@ def getnewmsg(channel):
         'Team': session['team'],
         'Password': session['password'],
         'ContestId': session['contestid'],
-        'Command': 'WaitingCount'})
+        'Command': 'WaitingCount'},
+        encoding='cp1251')
 
     if state == 'error':
         return answer
@@ -331,7 +341,9 @@ def getnewmsg(channel):
         if wtc == 0:
             return render_template("getnewmsg.html")
         if 'confirm' in request.args:
-            state, answer = util.communicate(channel, {'ID': request.args['confirm'], 'Command': 'DisableUnrequested'})
+            state, answer = util.communicate(channel,
+                {'ID': request.args['confirm'], 'Command': 'DisableUnrequested'},
+                encoding='cp1251')
             if state == 'error':
                 return answer
             if wtc > 1:
@@ -339,7 +351,7 @@ def getnewmsg(channel):
             else:
                 return redirect(url_for("index"))
         else:
-            state, answer = util.communicate(channel)
+            state, answer = util.communicate(channel, encoding='cp1251')
 
             if state == 'error':
                 return answer
@@ -350,12 +362,12 @@ def getnewmsg(channel):
         wtc = 0
         id = answer['ID']
 
-    return render_template("getnewmsg.html", message=answer.get('Message', '').decode('cp1251'), id=id)
+    return render_template("getnewmsg.html", message=answer.get('Message', ''), id=id)
 
 @tswebapp.route('/clars')
 @decorators.login_required
 @decorators.channel_user('MSG')
-@decorators.channel_fetcher({'DisableUnrequested': 1, 'Command': 'AllClars'}, auth=True)
+@decorators.channel_fetcher({'DisableUnrequested': 1, 'Command': 'AllClars'}, auth=True, encoding='cp1251')
 @decorators.channel_user('SUBMIT')
 def clars(channel, clars_data, ans_id):
     problems, compilers, extensions = get_compilers(channel)
@@ -363,10 +375,10 @@ def clars(channel, clars_data, ans_id):
     clars = []
     for i in xrange(int(clars_data['Clars'])):
         clar = {}
-        clar['from'] = clars_data.get('ClarFrom_'+str(i), '').decode('cp1251')
-        clar['problem'] = clars_data.get('ClarProb_'+str(i), '').decode('cp1251')
-        clar['question'] = clars_data.get('ClarQ_'+str(i), '').decode('cp1251')
-        clar['answer'] = clars_data.get('ClarA_'+str(i), '').decode('cp1251')
+        clar['from'] = clars_data.get('ClarFrom_'+str(i), '')
+        clar['problem'] = clars_data.get('ClarProb_'+str(i), '')
+        clar['question'] = clars_data.get('ClarQ_'+str(i), '')
+        clar['answer'] = clars_data.get('ClarA_'+str(i), '')
         clar['answered'] = int(clars_data.get('ClarAnswd_'+str(i), 0))
         clar['broadcast'] = int(clars_data.get('ClarBCast_'+str(i), 0))
         clars.append(clar)
@@ -382,7 +394,7 @@ def submit_clar(channel):
         'ContestId': session['contestid'],
         'Problem': request.form['prob'],
         'Command': 'Clar',
-        'Clar': request.form['clar'].encode('cp866')})
+        'Clar': request.form['clar']})
     if state == 'error':
         return answer
 
