@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import os, logging
-from ConfigParser import ConfigParser
+
+try:
+    from ConfigParser import ConfigParser
+except ImportError:
+    from configparser import ConfigParser
 
 config_dir = os.path.abspath(os.path.dirname(__file__))
 config_file = os.path.join(config_dir, 'config.cfg')

@@ -2,7 +2,8 @@
 dictionaries and lists"""
 
 import re
-import tsweb
+from .app import tswebapp
+from .compat import xrange
 
 command_regex = re.compile(r"""
 (?<!\\)" #match opening quot, unless it's escaped
@@ -37,17 +38,17 @@ def gen_monitor(history, data):
     """Generate config suitable for monitor.html template from raw history and
     monitor data"""
     if data and not history:
-        return {'pre': data.decode('cp866')}
+        return {'pre': data}
 
-    history = crlf_regex.split(history.decode('cp1251').strip())
+    history = crlf_regex.split(history.strip())
     #Order of commands in valid monitor
     #Format: (name, converter, checker)
     command_order = [
         ('contest', lambda x: x.replace('"', ''), lambda x: True),
-        ('startat', unicode, date_regex.match),
+        ('startat', str, date_regex.match),
         ('contlen', int, lambda x: True),
         ('now', int, lambda x: True),
-        ('state', unicode, lambda x: x in states),
+        ('state', str, lambda x: x in states),
         ('freeze', int, lambda x: True),
         ('problems', int, lambda x: True),
         ('teams', int, lambda x: True),
@@ -61,7 +62,7 @@ def gen_monitor(history, data):
             expected_command, converter, checker = command_order.pop(0)
 
             if real_command != expected_command:
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Unexpected command in monitor: \
 {0} while waiting for {1}".format(real_command, expected_command))
                 raise ParsingError("Bad command in monitor")
@@ -69,13 +70,13 @@ def gen_monitor(history, data):
             try:
                 arg = converter(args[0])
             except ValueError as e:
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Bad argument '{0}' for command \
 '{1}': {2}".format(args[0].encode('utf-8'), real_command, e.message))
                 raise ParsingError("Bad command format in monitor")
 
             if not checker(arg):
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Bad argument '{0}' for command \
 '{1}'".format(arg.encode('utf-8'), real_command))
                 raise ParsingError("Bad command format in monitor")
@@ -86,7 +87,7 @@ def gen_monitor(history, data):
             try:
                 config['m_for'] = commands[0][1][0]
             except ValueError as e:
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Bad argument '{0}' for command \
 '{1}'".format(commands[0][1][0].encode('utf-8'), 'for'))
                 raise ParsingError("Bad command format in monitor")
@@ -96,20 +97,20 @@ def gen_monitor(history, data):
         for i in xrange(config['problems']):
             p, problem = commands.pop(0)
             if p != 'p':
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Expected problem {} of {}, got '{} {}",
                     i, config['problems'], p, problem)
                 continue
             id, name, p1, p2 = problem
             if not problem_id_regex.match(id):
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Bad problem id: '{0}'".format(id))
                 raise ParsingError("Bad problem specification")
             try:
                 p1 = int(p1)
                 p2 = int(p2)
             except ValueError:
-                tsweb.main.tswebapp.logger.error("Invalid penalty: '{0}, \
+                tswebapp.logger.error("Invalid penalty: '{0}, \
 {1}'".format(p1, p2))
 
             problems[id] = (name, p1, p2)
@@ -118,7 +119,7 @@ def gen_monitor(history, data):
         for i in xrange(config['teams']):
             t, team = commands.pop(0)
             if t != 't':
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Expected team {} of {}, got '{} {}",
                     i, config['teams'], t, team)
                 continue
@@ -130,14 +131,14 @@ def gen_monitor(history, data):
                 name = name[1:-1]
 
             if not problem_id_regex.match(id):
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Bad team id: '{0}'".format(id))
                 raise ParsingError("Bad team specification")
             try:
                 monclass = int(monclass)
                 monset = int(monset)
             except ValueError:
-                tsweb.main.tswebapp.logger.error("Invalid monclass or monset: \
+                tswebapp.logger.error("Invalid monclass or monset: \
 '{0}, {1}'".format(monclass, monset))
 
             #Fields 3, 4, 5 and 6 are prepared for future solved, score, rank counters and table row classifier
@@ -149,7 +150,7 @@ def gen_monitor(history, data):
         for i in xrange(config['submissions']):
             s, submission = commands.pop(0)
             if s != 's':
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Expected submission {} of {}, got '{} {}",
                     i, config['submissions'], s, submission)
                 continue
@@ -175,18 +176,18 @@ def gen_monitor(history, data):
                 IOI = mode
 
             if not mode:
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Invalid result code {}".format(result))
                 raise ParsingError("Bad monitor format")
 
             if mode != IOI:
-                tsweb.main.tswebapp.logger.error("Mixed acm/ioi monitor")
+                tswebapp.logger.error("Mixed acm/ioi monitor")
                 raise ParsingError("Bad monitor format")
 
             if (result == 'OK' or result == "OC" or (IOI > 0 and result != "--")) and test != 0:
-                tsweb.main.tswebapp.logger.error(
+                tswebapp.logger.error(
                     "Test number not expected for OK/OC result or IOI monitor")
-                tsweb.main.tswebapp.logger.debug("{}".format(submission))
+                tswebapp.logger.debug("{}".format(submission))
 
             submissions.append({'team': team, 'problem': problem,
                 'attempt': attempt, 'time': time, 'result': result,
@@ -206,9 +207,7 @@ def gen_monitor(history, data):
             active_team = False
             for problem in sorted(problems):
                 #Get submissions of current problem by current team
-                subs = filter(
-                    lambda x: x['team'] == team and x['problem'] == problem,
-                    submissions)
+                subs = [sub for sub in submissions if sub['team'] == team and sub['problem'] == problem]
                 #Sort them by attempts (secondary key)
                 subs.sort(key=lambda x: x['attempt'])
                 #And by time (primary key)
@@ -311,15 +310,13 @@ def gen_monitor(history, data):
         config['problem_list'] = (problems)
         config['accepts'] = accepted_counters
         config['rejects'] = rejected_counters
-        config['total_accepts'] = sum(accepted_counters.itervalues())
-        config['total_rejects'] = sum(rejected_counters.itervalues())
+        config['total_accepts'] = sum(accepted_counters.values())
+        config['total_rejects'] = sum(rejected_counters.values())
         config['IOI'] = IOI == 1
 
         if len(submissions) > 0:
-            succ = filter(
-                lambda x: True if x['result'] == 'OK' or x['result'] == 'OC' else False,
-                sorted(submissions, key=lambda y: y['time'], reverse=1))
-            if succ == []:
+            succ = [sub for sub in sorted(submissions, key=lambda y: y['time'], reverse=1) if sub['result'] == 'OK' or sub['result'] == 'OC']
+            if not succ:
                 config['last_success'] = None
             else:
                 config['last_success'] = succ[0]

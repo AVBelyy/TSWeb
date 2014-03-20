@@ -3,7 +3,7 @@ from flask import session
 from functools import wraps
 from copy import copy
 
-from tsweb import util, testsys
+from . import util, testsys
 
 def login_required(f):
     """
@@ -17,7 +17,7 @@ def login_required(f):
 
     return wrapper
 
-def channel_fetcher(request={}, auth=False):
+def channel_fetcher(request={}, auth=False, encoding='cp866'):
     """
     This wrappper fetches data from testsys and calls decorated function with
     answer dict as first argument. It assumes function's first argument is
@@ -33,7 +33,7 @@ def channel_fetcher(request={}, auth=False):
                 req['Team'] = session['team']
                 req['Password'] = session['password']
                 req.setdefault('ContestId', session['contestid'])
-            state, result = util.communicate(channel, req)
+            state, result = util.communicate(channel, req, encoding=encoding)
             if state == 'error':
                 return result
             else:
