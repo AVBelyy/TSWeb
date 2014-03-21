@@ -1,8 +1,9 @@
 """Various auxillary functions for tsweb Web Application"""
 
 from flask import redirect, render_template
-from pygments.lexers import guess_lexer
+from pygments.lexers import guess_lexer, guess_lexer_for_filename
 from pygments.formatters import HtmlFormatter
+import pygments.util
 from pygments import highlight as p_highlight
 from bs4 import BeautifulSoup as bs
 from flask.ext.babel import gettext
@@ -86,9 +87,17 @@ def communicate(chan, request=None, check_empty=True, encoding='cp866'):
 
     return ('ok', (answer, ans_id))
 
-def highlight(text):
+def highlight(text, filename=None):
     """Guess language in *text* and return its html highlighted version"""
-    lexer = guess_lexer(text)
+    if filename is not None:
+        #Pygments does not know dpr
+        filename = filename.replace('dpr', 'pas')
+        try:
+            lexer = guess_lexer_for_filename(filename, text)
+        except pygments.util.ClassNotFound:
+            lexer = guess_lexer(text)
+    else:
+        lexer = guess_lexer(text)
     formatter = HtmlFormatter(style='manni', linenos=True, classprefix="highlight-")
     return formatter.get_style_defs(), p_highlight(text, lexer, formatter)
 

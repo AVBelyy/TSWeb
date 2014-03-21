@@ -282,7 +282,7 @@ def viewsubmit(channel, id):
         resp.headers['Content-Type'] = 'text/plain'
         return resp
     else:
-        css, text = util.highlight(answer['SubmText'])
+        css, text = util.highlight(answer['SubmText'], answer.get('FileName'))
         return render_template("viewsubmit.html", css=css, text=text, id=id)
 
 @tswebapp.route('/allsubmits/feedback/<int:id>')
