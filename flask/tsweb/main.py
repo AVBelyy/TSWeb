@@ -190,7 +190,7 @@ def submit(channel):
 @tswebapp.route('/monitor')
 @decorators.login_required
 @decorators.channel_user('MONITOR')
-@decorators.channel_fetcher(auth=True, encoding='cp1251')
+@decorators.channel_fetcher(auth=True, encoding=('cp1251', 'cp866'))
 def monitor_page(ans, ans_id):
     config = monitor.gen_monitor(ans['History'], ans['Monitor'])
     return render_template("monitor.html", **config)
@@ -269,7 +269,8 @@ def viewsubmit(channel, id):
         'ContestId': session['contestid'],
         'DisableUnrequested': '1',
         'SubmID': id,
-        'Command': 'SubmText'})
+        'Command': 'SubmText'},
+        encoding='detect')
 
     if state == 'error':
         return answer
@@ -277,11 +278,11 @@ def viewsubmit(channel, id):
     answer, ans_id = answer
 
     if request.args.get('raw', ''):
-        resp = make_response(util.detect_and_convert(answer['SubmText'].encode('cp866')))
+        resp = make_response(answer['SubmText'])
         resp.headers['Content-Type'] = 'text/plain'
         return resp
     else:
-        css, text = util.highlight(util.detect_and_convert(answer['SubmText'].encode("cp866")))
+        css, text = util.highlight(answer['SubmText'])
         return render_template("viewsubmit.html", css=css, text=text, id=id)
 
 @tswebapp.route('/allsubmits/feedback/<int:id>')
@@ -293,7 +294,8 @@ def feedback(channel, id):
         'Password': session['password'],
         'ContestId': session['contestid'],
         'SubmID': id,
-        'Command': 'ViewFeedback'})
+        'Command': 'ViewFeedback'},
+        encoding='detect')
 
     if state == 'error':
         return answer
@@ -301,7 +303,7 @@ def feedback(channel, id):
     answer, ans_id = answer
 
     return render_template("feedback.html", hdr=answer.get('FeedbackAddHeader', ''),
-                           feedback=util.detect_and_convert(answer.get('Feedback').decode('cp1251')),
+                           feedback=answer.get('Feedback', ''),
                            id=id)
 
 @tswebapp.route('/contests')

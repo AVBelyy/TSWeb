@@ -2,7 +2,9 @@
 
 import socket, re, random, select, errno
 from flask import request
+from chardet import detect
 from .app import tswebapp
+from .compat import unicode
 
 _channels = {}
 
@@ -22,17 +24,44 @@ class ConnectionFailedException(Exception):
 def dle_encode(string, encoding):
     """Encode *string* to TestSys binary protocol"""
 
-    if not isinstance(string, (str, bytes)):
+    if not isinstance(string, (str, bytes, unicode)):
         string = str(string)
 
     string = string.encode(encoding)
 
-    repl = lambda match: "\x18" + chr(0x40+ord(match.group(1)))
+    repl = lambda match: b'\x18' + chr(0x40+ord(match.group(1))).encode('ascii')
     return encode_regex.sub(repl, string)
 
 def dle_decode(string, encoding):
     """Decode *string* from TestSys binary protocol"""
+
+    def fallback(res):
+        try:
+            enc = detect(res)['encoding']
+            return res.decode(enc)
+        except (UnicodeDecodeError, KeyError):
+            # If everything fails, return escaped string...
+            return repr(res).strip("b'")
+
     repl = lambda match: chr(ord(match.group(1))-0x40).encode('ascii')
+
+    res = decode_regex.sub(repl, string)
+
+    if isinstance(encoding, tuple):
+        for enc in encoding:
+            try:
+                return res.decode(enc)
+            except UnicodeDecodeError:
+                continue
+        return fallback(res)
+    elif encoding == 'detect':
+        return fallback(res)
+    else:
+        try:
+            return res.decode(encoding)
+        except UnicodeDecodeError:
+            return fallback(res)
+
     return decode_regex.sub(repl, string).decode(encoding)
 
 def client_triplet():
@@ -200,7 +229,7 @@ class Channel():
             elif on:
                 match = re.match(r'^([A-Za-z_0-9]+)=(.*)$'.encode('ascii'), e)
                 if match:
-                    R[match.group(1).decode(encoding)] = dle_decode(match.group(2), encoding)
+                    R[match.group(1).decode('ascii')] = dle_decode(match.group(2), encoding)
 
         if on:
             self.partial = b'\0'.join(E)
