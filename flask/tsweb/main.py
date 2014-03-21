@@ -211,6 +211,7 @@ def submits(channel):
         'ContestId': session['contestid'],
         'DisableUnrequested': '1',
         'AllSubm': request.args.get('all', 0),
+        'SubmLimit': request.args.get('limit', 1000),
         'Command': 'AllSubmits'})
 
     if state == 'error':
