@@ -31,7 +31,7 @@
             <th>ID</th>
             <th>{{ _('Team') }}</th>
             {%- for name, problem in problem_list.items()|sort %}
-            <th width="35" class="problem-title"><span data-original-title="{{ problem[0] }}" rel="tooltip">{{ name }}</span></th>
+            <th width="35" class="problem-title {%- if name in solved_problems %} problem-solved{%- endif -%}"><span data-original-title="{{ problem[0] }}" rel="tooltip">{{ name }}</span></th>
             {%- endfor %}
             <th width="25" class="problem-title">=</th>
             <th>{{ _('Time' if not IOI else 'Score') }}</th>
@@ -49,14 +49,19 @@
         <tr class="{{ class }} {{ for_class }}">
             <td class="{{ for_class }}">{{ team }}</td>
             <td class="{{ for_class }}">{{ name }}</td>
-            {% for attempts, score, time, res, test in results[team] -%}
+            {% for attempts, score, time, res, test, problem in results[team] -%}
             {%- set succ = False -%}
             {%- set out_time = True -%}
+            {%- if first_accepts.get(problem) == team -%}
+                {%- set first="first-accept" -%}
+            {%- else -%}
+                {%- set first="" -%}
+            {%- endif -%}
             {% if res == 'OC' %}
             <td class="ok">*</td>
             </td>
             {% else %}
-            <td {% if res == 'OK' or (IOI and (score or res == '??')) %}class="ok" {%- set succ = True -%}{% elif attempts %}class="wa"{% else %}class="no"{% endif %}>
+            <td {% if res == 'OK' or (IOI and (score or res == '??')) %}class="ok {{ first }}" {%- set succ = True -%}{% elif attempts %}class="wa"{% else %}class="no"{% endif %}>
                 {%- if attempts < 0 %}
                 {{ attempts if not IOI else res }}
                 {%- elif attempts-1 > 0 and succ -%}

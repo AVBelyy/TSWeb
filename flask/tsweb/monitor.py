@@ -115,6 +115,9 @@ def gen_monitor(history, data):
 
             problems[id] = (name, p1, p2)
 
+        config['solved_problems'] = {}
+        config['first_accepts'] = {}
+
         teams = {}
         for i in xrange(config['teams']):
             t, team = commands.pop(0)
@@ -191,6 +194,10 @@ def gen_monitor(history, data):
                     "Test number not expected for OK/OC result or IOI monitor")
                 tswebapp.logger.debug("{}".format(submission))
 
+            if result == 'OK' or result == 'OC' or (IOI > 0 and result != '--'):
+                config['solved_problems'][problem] = True
+                config['first_accepts'].setdefault(problem, team)
+
             submissions.append({'team': team, 'problem': problem,
                 'attempt': attempt, 'time': time, 'result': result,
                 'htime': '%d:%02d:%02d' % (time/3600, (time/60) % 60, time % 60),
@@ -216,7 +223,7 @@ def gen_monitor(history, data):
                 subs.sort(key=lambda x: x['time'])
 
                 if not subs:
-                    result = (0, 0, 0, '', 0)
+                    result = (0, 0, 0, '', 0, '')
                 else:
                     ioi_cutoff = len(subs)
                     for i, sub in enumerate(subs):
@@ -231,23 +238,23 @@ def gen_monitor(history, data):
 
                     sub = subs[-1]
                     attempts = len(subs)
-                    #Format of result: (+-attempts, score, time, result, test number)
+                    #Format of result: (+-attempts, score, time, result, test number, problem name)
                     if sub['result'] == 'OC':
-                        result = (1, 0, sub['time'], sub['result'], 0)
+                        result = (1, 0, sub['time'], sub['result'], 0, sub['problem'])
                     elif IOI:
                         if sub['result'] != '--':
-                            result = (attempts, '??' if sub['result'] in ('??', 'FZ') else int(sub['result']), sub['time'], sub['result'], 0)
+                            result = (attempts, '??' if sub['result'] in ('??', 'FZ') else int(sub['result']), sub['time'], sub['result'], 0, sub['problem'])
                         else:
-                            result = (-attempts, 0, sub['time'], sub['result'], 0)
+                            result = (-attempts, 0, sub['time'], sub['result'], 0, sub['problem'])
                     else:
                         if sub['result'] == 'OK':
                             result = (attempts,
                                 problems[problem][1] * 60 * (attempts-1) + sub['time'],
-                                sub['time'], sub['result'], 0)
+                                sub['time'], sub['result'], 0, sub['problem'])
                         else:
                             result = (-attempts,
                                 problems[problem][2] * 60 * attempts, sub['time'],
-                                sub['result'], sub['test'])
+                                sub['result'], sub['test'], sub['problem'])
 
                     #Increase proper counters for team
                     if result[0] > 0:
@@ -263,7 +270,7 @@ def gen_monitor(history, data):
                     if IOIScores and result[1] != '??':
                         teams[team][4] += result[1]  # scores counter
                 results.append(result)
-                if result != (0, 0, 0, '', 0):
+                if result != (0, 0, 0, '', 0, ''):
                     active_team = True
             if active_team:
                 TeamsResults[team] = results
