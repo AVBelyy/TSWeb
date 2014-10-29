@@ -16,4 +16,4 @@ TD.pen { text-align: center }
 TD.rk { text-align: center }
 TH.problem-title { text-align: center }
 TH.problem-solved, .table-hover tbody TR:hover > TH.problem-solved { background-color: #A4F4B4 }
-TD.first-accept, .table-hover tbody TR:hover > TD.first-accept { color: #000; background-color: #BF8 }
+TD.first-accept, TR.for TD.first-accept, .table-hover tbody TR:hover > TD.first-accept { color: #000; background-color: #BF8 }
