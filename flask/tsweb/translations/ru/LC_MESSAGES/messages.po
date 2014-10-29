@@ -335,7 +335,7 @@ msgstr "Отправки"
 
 #: tsweb/templates/menu.html:12
 msgid "Statements"
-msgstr "Условия"
+msgstr "Условия задач"
 
 #: tsweb/templates/menu.html:13
 msgid "Print solution"
