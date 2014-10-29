@@ -16,7 +16,7 @@ crlf_regex = re.compile(r'\r?\n')
 date_regex = re.compile(r'\d{2}\.\d{2}\.\d{2,4}\s\d{2}:\d{2}:\d{2}')
 problem_id_regex = re.compile(r'^[A-Za-z0-9_\-]{1,16}$')
 acm_result_regex = re.compile(r'[A-Z][A-Z]')
-ioi_result_1_regex = re.compile(r'(\?\?)|(\-\-)')
+ioi_result_1_regex = re.compile(r'(FZ)|(\?\?)|(\-\-)')
 ioi_result_2_regex = re.compile(r'\d{1,3}')
 states = ('BEFORE', 'RUNNING', 'OVER', 'FROZEN', 'RESULTS')
 
@@ -166,7 +166,9 @@ def gen_monitor(history, data):
             mode = 0
             if acm_result_regex.match(result):
                 mode = -1
-            elif ioi_result_1_regex.match(result):
+
+            # IOI result may be equal to 'FZ'. No idea what it is, though
+            if ioi_result_1_regex.match(result):
                 mode = 1
             elif ioi_result_2_regex.match(result):
                 mode = 1
@@ -234,7 +236,7 @@ def gen_monitor(history, data):
                         result = (1, 0, sub['time'], sub['result'], 0)
                     elif IOI:
                         if sub['result'] != '--':
-                            result = (attempts, '??' if sub['result'] == '??' else int(sub['result']), sub['time'], sub['result'], 0)
+                            result = (attempts, '??' if sub['result'] in ('??', 'FZ') else int(sub['result']), sub['time'], sub['result'], 0)
                         else:
                             result = (-attempts, 0, sub['time'], sub['result'], 0)
                     else:
