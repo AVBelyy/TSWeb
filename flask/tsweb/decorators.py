@@ -53,7 +53,7 @@ def channel_user(chan):
             try:
                 channel.open(1)
             except testsys.ConnectionFailedException as e:
-                return util.error(e.message)
+                return util.error(e)
 
             try:
                 return f(channel, *args, **kwargs)

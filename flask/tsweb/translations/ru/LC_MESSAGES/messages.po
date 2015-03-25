@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-06-17 17:52+0400\n"
-"PO-Revision-Date: 2013-06-17 17:56+0300\n"
+"POT-Creation-Date: 2015-03-25 19:30+0300\n"
+"PO-Revision-Date: 2015-03-25 19:38+0300\n"
 "Last-Translator: Maxim Koltsov <kolmax94@gmail.com>\n"
 "Language-Team: ru <LL@li.org>\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
@@ -16,58 +16,66 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 0.9.6\n"
+"Generated-By: Babel 1.3\n"
 "X-Generator: Poedit 1.5.5\n"
 
-#: tsweb/main.py:69
+#: tsweb/main.py:44
 msgid "Invalid team name"
 msgstr "Неверный логин"
 
-#: tsweb/main.py:72
+#: tsweb/main.py:47
 msgid "Non-empty password expected"
 msgstr "Ожидался непустой пароль"
 
-#: tsweb/main.py:91
+#: tsweb/main.py:66
 msgid "Thank you for logging in, {0}!"
 msgstr "Спасибо за вход, {0}!"
 
-#: tsweb/main.py:183
+#: tsweb/main.py:164
 msgid "No solution presented"
 msgstr "Пустое решение"
 
-#: tsweb/main.py:187
+#: tsweb/main.py:168
 msgid "Unknown problem '{0}'"
 msgstr "Неизвестная задача '{0}'"
 
-#: tsweb/main.py:189
+#: tsweb/main.py:170
 msgid "Unknown compiler '{0}'"
 msgstr "Неизвестный компилятор '{0}'"
 
-#: tsweb/main.py:221
+#: tsweb/main.py:202
 msgid "Your contest has been changed to {0}, {1}!"
 msgstr "Ваша тренировка изменилась на {0}, {1}!"
 
-#: tsweb/util.py:23
+#: tsweb/testsys.py:22
+msgid "Error while communicating with TestSys"
+msgstr "Ошибка при общении с TestSys"
+
+#: tsweb/testsys.py:30
+msgid "Can not connect to TestSys"
+msgstr "Невозможно подключиться к TestSys"
+
+#: tsweb/util.py:25
 msgid "Login error: session data missing or expired"
 msgstr "Ошибка авторизации: данные отсутствуют или устарели"
 
-#: tsweb/util.py:24
+#: tsweb/util.py:26
 msgid "Authentification Error"
 msgstr "Ошибка авторизации"
 
-#: tsweb/util.py:33
+#: tsweb/util.py:35
 msgid "TestSys reports following error: {0}"
 msgstr "TestSys сообщает об ошибке: {0}"
 
-#: tsweb/util.py:34
+#: tsweb/util.py:36
 msgid "TestSys reports unknown error"
 msgstr "TestSys сообщает о неизвестной ошибке"
 
-#: tsweb/util.py:35
+#: tsweb/util.py:37
 msgid "TestSys error"
 msgstr "Ошибка TestSys"
 
-#: tsweb/util.py:79
+#: tsweb/util.py:81
 msgid "Empty response from testsys"
 msgstr "Пустой ответ от TestSys"
 
@@ -81,7 +89,7 @@ msgid "Problem"
 msgstr "Задача"
 
 #: tsweb/templates/allsubmits.html:55 tsweb/templates/allsubmits.html:74
-#: tsweb/templates/index.html:16 tsweb/templates/monitor.html:30
+#: tsweb/templates/index.html:16 tsweb/templates/monitor.html:32
 msgid "Team"
 msgstr "Участник"
 
@@ -89,7 +97,7 @@ msgstr "Участник"
 msgid "Attempt"
 msgstr "Попытка"
 
-#: tsweb/templates/allsubmits.html:63 tsweb/templates/monitor.html:35
+#: tsweb/templates/allsubmits.html:63
 msgid "Time"
 msgstr "Время"
 
@@ -137,7 +145,7 @@ msgstr "Use token"
 msgid "Score"
 msgstr "Очки"
 
-#: tsweb/templates/allsubmits.html:98 tsweb/templates/allsubmits.html:102
+#: tsweb/templates/allsubmits.html:100 tsweb/templates/allsubmits.html:104
 msgid "View"
 msgstr "Открыть"
 
@@ -309,11 +317,11 @@ msgstr ""
 "%(contest_duration)s</strong> минут, время на тестирующем сервере <strong>"
 "%(server_now)s</strong>"
 
-#: tsweb/templates/main.html:47
+#: tsweb/templates/main.html:48
 msgid "Language:"
 msgstr "Язык:"
 
-#: tsweb/templates/main.html:53
+#: tsweb/templates/main.html:54
 msgid "Save"
 msgstr "Сохранить"
 
@@ -368,7 +376,7 @@ msgstr "Длительность: <b>%(duration)s</b>"
 msgid "State: <b>%(state)s %(mins)s/%(contlen)s</b>"
 msgstr "Состояние: <b>%(state)s %(mins)s/%(contlen)s</b>"
 
-#: tsweb/templates/monitor.html:22
+#: tsweb/templates/monitor.html:23
 #, python-format
 msgid ""
 "Last success: %(htime)s, team <b>%(team)s</b> &mdash; <b>%(name)s</b>, "
@@ -377,7 +385,7 @@ msgstr ""
 "Последний успех: %(htime)s, <b>%(team)s</b> &mdash; <b>%(name)s</b>, задача "
 "<b>%(problem)s</b>"
 
-#: tsweb/templates/monitor.html:23
+#: tsweb/templates/monitor.html:25
 #, python-format
 msgid ""
 "Last submission: %(htime)s, team <b>%(team)s</b> &mdash; <b>%(name)s</b>, "
@@ -386,23 +394,23 @@ msgstr ""
 "Последняя отправка: %(htime)s, <b>%(team)s</b> &mdash; <b>%(name)s</b>, "
 "задача <b>%(problem)s</b>"
 
-#: tsweb/templates/monitor.html:36
+#: tsweb/templates/monitor.html:38
 msgid "Rank"
 msgstr "Рейтинг"
 
-#: tsweb/templates/monitor.html:73
+#: tsweb/templates/monitor.html:86
 msgid "Submits"
 msgstr "Отправлено решений"
 
-#: tsweb/templates/monitor.html:83
+#: tsweb/templates/monitor.html:96
 msgid "Accepted"
 msgstr "Принятно &mdash; accepted"
 
-#: tsweb/templates/monitor.html:96
+#: tsweb/templates/monitor.html:109
 msgid "Rejected"
 msgstr "Отклонено &mdash; rejected"
 
-#: tsweb/templates/monitor.html:114
+#: tsweb/templates/monitor.html:125
 msgid "Teams list"
 msgstr "Список участников"
 

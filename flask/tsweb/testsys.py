@@ -3,6 +3,7 @@
 import socket, re, random, select, errno
 from flask import request
 from chardet import detect
+from flask.ext.babel import gettext
 from .app import tswebapp
 from .compat import unicode
 
@@ -17,9 +18,21 @@ class CommunicationException(Exception):
     """This exception is raised when error occurs on opened socket"""
     pass
 
+    def __str__(self):
+        if not self.args:
+            return gettext("Error while communicating with TestSys")
+        else:
+            return super(CommunicationException, self).__str__()
+
 class ConnectionFailedException(Exception):
     """This exception is raised when error occurs while opening socket"""
     pass
+
+    def __str__(self):
+        if not self.args:
+            return gettext("Can not connect to TestSys")
+        else:
+            return super(ConnectionFailedException, self).__str__()
 
 def dle_encode(string, encoding):
     """Encode *string* to TestSys binary protocol"""
@@ -145,7 +158,7 @@ class Channel():
                 raise ConnectionFailedException()
             except socket.error as e:
                 tswebapp.logger.error(
-                    "Connection failed, {0} {1}".format(*e))
+                    "Connection failed, {0}".format(e))
                 raise ConnectionFailedException()
             self.sock.setblocking(not nb)
 
@@ -158,7 +171,7 @@ class Channel():
                 self.sock = None
             except socket.error as e:
                 tswebapp.logger.error(
-                    "Error while closing socket, {0} {1}".format(*e))
+                    "Error while closing socket, {0}".format(e))
 
     def send(self, msg, timeout=0, encoding='cp866'):
         """Send message *msg* to socket. *msg* must be dict"""

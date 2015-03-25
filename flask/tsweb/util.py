@@ -59,20 +59,20 @@ def communicate(chan, request=None, check_empty=True, encoding='cp866'):
             try:
                 channel.open(1)
             except testsys.ConnectionFailedException as ex:
-                return ('error', error(ex.message))
+                return ('error', error(ex))
     else:
         channel = testsys.get_channel(chan)
         try:
             channel.open(1)
         except testsys.ConnectionFailedException as ex:
-            return ('error', error(ex.message))
+            return ('error', error(ex))
         need_close = True
 
     if request:
         try:
             ans_id = channel.send(request, encoding=encoding)
         except testsys.CommunicationException as ex:
-            return ('error', error(ex.message))
+            return ('error', error(ex))
     else:
         ans_id = 0
 

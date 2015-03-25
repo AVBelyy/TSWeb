@@ -72,7 +72,7 @@ def gen_monitor(history, data):
             except ValueError as e:
                 tswebapp.logger.error(
                     "Bad argument '{0}' for command \
-'{1}': {2}".format(args[0].encode('utf-8'), real_command, e.message))
+'{1}': {2}".format(args[0].encode('utf-8'), real_command, e))
                 raise ParsingError("Bad command format in monitor")
 
             if not checker(arg):
@@ -194,7 +194,8 @@ def gen_monitor(history, data):
                     "Test number not expected for OK/OC result or IOI monitor")
                 tswebapp.logger.debug("{}".format(submission))
 
-            if result == 'OK' or result == 'OC' or (IOI > 0 and result != '--'):
+            # TODO: improve criterea of first accept (max result must not equal 100)
+            if result == 'OK' or result == 'OC' or (IOI > 0 and result == '100'):
                 config['solved_problems'][problem] = True
                 config['first_accepts'].setdefault(problem, team)
 
@@ -335,5 +336,5 @@ def gen_monitor(history, data):
             config['last_success'] = None
             config['last_submission'] = None
     except ParsingError as e:
-        config = {'error': e.message}
+        config = {'error': e}
     return config

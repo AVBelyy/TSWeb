@@ -142,7 +142,7 @@ def submit(channel):
     try:
         problems, compilers, extensions = get_compilers(channel)
     except testsys.CommunicationException as e:
-        return render_template("error.html", text=e.message)
+        return render_template("error.html", text=e)
 
     if request.method == 'GET':
         config = {}
@@ -270,7 +270,7 @@ def viewsubmit(channel, id):
         'DisableUnrequested': '1',
         'SubmID': id,
         'Command': 'SubmText'},
-        encoding='detect')
+        encoding='cp866')
 
     if state == 'error':
         return answer
@@ -295,7 +295,7 @@ def feedback(channel, id):
         'ContestId': session['contestid'],
         'SubmID': id,
         'Command': 'ViewFeedback'},
-        encoding='detect')
+        encoding='cp1251')
 
     if state == 'error':
         return answer
