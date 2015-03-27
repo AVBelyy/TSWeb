@@ -5,6 +5,7 @@ from flask import Flask, session
 from flask.ext.babel import Babel
 
 from . import config
+from .smtphandler import SMTPHandler
 
 tswebapp = Flask(__name__)
 tswebapp.config.from_object(config)
@@ -45,11 +46,11 @@ if tswebapp.config['LOG_TO_EMAIL']:
 
     %(message)s
     ''')
-    smtpHandler = logging.handlers.SMTPHandler((tswebapp.config['SMTP_SERVER'], tswebapp.config['SMTP_PORT']),
-                                                tswebapp.config['EMAIL_FROM'],
-                                                tswebapp.config['LOG_EMAILS'],
-                                                'TSWeb log',
-                                                (tswebapp.config['EMAIL_FROM'], tswebapp.config['EMAIL_PASSWORD']),
-                                                tuple())
+    smtpHandler = SMTPHandler((tswebapp.config['SMTP_SERVER'], tswebapp.config['SMTP_PORT']),
+                               tswebapp.config['EMAIL_FROM'],
+                               tswebapp.config['LOG_EMAILS'],
+                               'TSWeb log',
+                               (tswebapp.config['EMAIL_FROM'], tswebapp.config['EMAIL_PASSWORD']),
+                               tuple())
     smtpHandler.setFormatter(smtpFormatter)
     tswebapp.logger.addHandler(smtpHandler)
