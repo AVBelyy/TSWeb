@@ -77,3 +77,4 @@ This TSWeb has some improvements over original version:
 * Submit form remembers compiler and problem chosen last time, lowering the chances of mis-submit
 * Monitor highlights solved problems and solutions that were first to get accepted
 * Submission source is highlighted with Pygments
+* Submission filter: you can filter submissions by result, task ID and team number
