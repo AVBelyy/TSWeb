@@ -7,10 +7,10 @@ class SMTPHandler(logging.handlers.SMTPHandler):
     in a separate thread, so that main thread does not block while email is sent.
     """
 
-    def __init__(self, *args, encoding="utf8", **kwargs):
+    def __init__(self, *args, **kwargs):
         super(SMTPHandler, self).__init__(*args, **kwargs)
 
-        self.encoding = encoding
+        self.encoding = kwargs.get("encoding", "utf8")
 
     def _send_email(self, msg):
         """

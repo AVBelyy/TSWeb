@@ -9,6 +9,23 @@ from flask import Flask, render_template, request, session, redirect, url_for, m
 from werkzeug import secure_filename
 from flask.ext.babel import Babel, gettext, refresh
 
+import sys
+
+# This is needed to correctly switch clients with sessions created by PY2 version of TSWeb
+# Otherwise e.g. babel fails getting bytes instead of str
+@tswebapp.before_request
+def py3_switch():
+    if sys.version_info.major != 3:
+        return
+
+    purge = False
+    for k in session:
+        if isinstance(session[k], bytes):
+            purge = True
+            break
+    
+    if purge:
+        session.clear()
 
 @babel.localeselector
 def get_locale():
