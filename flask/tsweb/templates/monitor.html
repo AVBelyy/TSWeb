@@ -26,16 +26,17 @@
             <div>
         </div>
         <div class="row-fluid">
-        <table class="table table-hover table-condensed span12">
+        <div class="span12">
+        <table class="table table-hover table-condensed monitor-table">
         <tr class="head">
-            <th>ID</th>
+            <th width="35">ID</th>
             <th>{{ _('Team') }}</th>
             {%- for name, problem in problem_list.items()|sort %}
             <th width="35" class="problem-title {%- if name in solved_problems %} problem-solved{%- endif -%}"><span data-original-title="{{ problem[0] }}" rel="tooltip">{{ name }}</span></th>
             {%- endfor %}
             <th width="25" class="problem-title">=</th>
-            <th>{{ _('Time' if not IOI else 'Score') }}</th>
-            <th>{{ _('Rank') }}</th>
+            <th width="70">{{ _('Time' if not IOI else 'Score') }}</th>
+            <th width="70">{{ _('Rank') }}</th>
         </tr>
         {% set class = 'odd' %}
         {%- for team, mclass, set, name, solved, score, rank, classifier in teams_list %}
@@ -119,6 +120,7 @@
             <td>&nbsp;</td>
             </tr>
         </table>
+        </div>
         </div>
         <div class="row-fluid">
             <div class="span12">
