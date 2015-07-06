@@ -271,7 +271,7 @@ def submits(channel):
             ml = True
         submissions.append(res)
 
-    submissions.sort(key=lambda x: int(x['ID']))
+    submissions.sort(key=lambda x: int(x['ID']), reverse=True)
 
     return render_template("allsubmits.html", feed=feed, score=score, team=team,
             tl=tl, ml=ml, submissions=submissions)
