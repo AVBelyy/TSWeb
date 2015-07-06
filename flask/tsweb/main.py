@@ -23,7 +23,7 @@ def py3_switch():
         if isinstance(session[k], bytes):
             purge = True
             break
-    
+
     if purge:
         session.clear()
 
@@ -48,6 +48,8 @@ def index():
 def logout():
     tm = ', {0}'.format(session['team']) if 'team' in session else ''
     session.pop('team', None)
+    session.pop('jury', None)
+
     response = util.redirector(url_for('index'), text="Thanks for logging out{0}!".format(tm))
     if 'purge' in request.args:
         session.clear()
@@ -89,9 +91,10 @@ def login():
 def format_main_page(ans, ans_id):
     config = {}
     config['wtc'] = int(ans.get('WaitingCount', 0))
-    config['jury'] = ans.get('JuryMode', False)
-    config['statements'] = ans.get('StatementsLink', '')
     config['contlist_mask'] = tswebapp.config['CONTLIST_MASK']
+
+    session['jury'] = ans.get('JuryMode', False)
+    session['statements'] = ans.get('StatementsLink', '')
 
     # TestSys is rather inconsistent with its encodings, so we need to recode
     # here
