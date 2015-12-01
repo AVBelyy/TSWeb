@@ -186,7 +186,7 @@ def gen_monitor(history, data):
                 raise ParsingError("Bad monitor format")
 
             if mode != IOI:
-                tswebapp.logger.error("Mixed acm/ioi monitor")
+                tswebapp.logger.error("Mixed acm/ioi monitor, mode = {}, IOI = {}, result = {}".format(mode, IOI, result))
                 raise ParsingError("Bad monitor format")
 
             if (result == 'OK' or result == "OC" or (IOI > 0 and result != "--")) and test != 0:

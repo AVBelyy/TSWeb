@@ -7,6 +7,8 @@ from flask.ext.babel import gettext
 from .app import tswebapp
 from .compat import unicode
 
+from traceback import format_stack
+
 _channels = {}
 
 teamname_regex = re.compile(r'^[A-Za-z\-\_0-9]{1,8}$')
@@ -188,8 +190,9 @@ class Channel():
                 res = self.sock.send(req, 0)
             except IOError as e:
                 tswebapp.logger.error(
-                    "Error sending data to socket, {0}, {1}".format(
-                        errno.errorcode.get(e.errno, ''), e.strerror))
+                    "Error sending data to socket, {0}, {1}.\n{2} \n{3}".format(
+                        errno.errorcode.get(e.errno, ''), e.strerror, e, ''.join(format_stack()))
+                )
                 raise CommunicationException(
                     "Error on socket, may be TestSys is down?")
             tot = res if res < 0 else tot + res

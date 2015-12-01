@@ -1,5 +1,8 @@
 <head>
     <title>{{ title }}</title>
+    {% if reload %}
+    <meta http-equiv="refresh" content="{{ reload }}"/>
+    {% endif %}
     <link href="{{ url_for('static', filename='tsweb.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ url_for('static', filename='bootstrap/css/bootstrap-responsive.min.css') }}" rel="stylesheet" type="text/css">

@@ -2,6 +2,7 @@
 <html>
     {% if not title %}{% set title = _('TestSys on the Web') %}{% endif %}
     {% set index = True %}
+    {% set reload = "1" %}
     {% include "header.html" %}
     <body>
     <div class="container-fluid">
@@ -43,6 +44,7 @@
                 <p>{{ _('Assigned contest: <strong>%(contid)s %(contname)s</strong>', contid=contid, contname=contname) }}</p>
                 <p>{{ _('Contest starts at <strong>%(contest_start)s</strong> and lasts <strong>%(contest_duration)s</strong> minutes, current TestSys time is <strong>%(server_now)s</strong>', contest_start=contest_start, contest_duration=contest_duration, server_now=server_now) }}</p>
                 <p><a target="_blank" href="http://moodle.lokos.net/">Сервер дистанционного обучения http://moodle.lokos.net/</a></p>
+                <p><a href="https://telegram.me/joinchat/AGxRswG-wLWa63jjZQlOLA">*** Наш чат в Telegram (присоединяйтесь!) ***</a></p>
                 <form class="form-inline" action="{{ url_for('set_language') }}">
                     <label for="lang" class="control-label">{{ _('Language:') }}</label>
                     <select id="lang" name="lang">
