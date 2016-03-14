@@ -87,7 +87,7 @@
         {%- elif sub['Result'] in ('NO') -%}
         {%- set class = "fno" %}
         {% endif -%}
-        <tr class="{{ class }}" data-result="{{ sub['Result'] }}" data-prob="{{ sub['Problem'] }}" data-team="{{ sub['Team'][:2] }}">
+        <tr class="{{ class }}" data-result="{{ sub['Result'] }}" data-prob="{{ sub['Problem'] }}" data-team="{{ sub['TeamID'] }}">
             <td>{{ sub['ID'] }}</td>
             <td>{{ sub['Problem'] }}</td>
             <td>{{ sub['Attempt'] }}</td>

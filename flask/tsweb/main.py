@@ -264,6 +264,7 @@ def submits(channel):
         if res['Score']:
             score = True
         if res['Team']:
+            res['TeamID'] = res['Team'].split()[0]
             team = True
         if res['TL']:
             tl = True
