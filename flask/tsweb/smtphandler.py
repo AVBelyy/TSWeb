@@ -17,23 +17,20 @@ class SMTPHandler(logging.handlers.SMTPHandler):
         Function that actually sends emails. Is run in a thread.
         """
 
-        try:
-            import smtplib
-            port = self.mailport
-            if not port:
-                port = smtplib.SMTP_PORT
-            smtp = smtplib.SMTP(self.mailhost, port, timeout=self.timeout)
+        import smtplib
+        port = self.mailport
+        if not port:
+            port = smtplib.SMTP_PORT
+        smtp = smtplib.SMTP(self.mailhost, port, timeout=self.timeout)
 
-            if self.username:
-                if self.secure is not None:
-                    smtp.ehlo()
-                    smtp.starttls(*self.secure)
-                    smtp.ehlo()
-                smtp.login(self.username, self.password)
-            smtp.sendmail(self.fromaddr, self.toaddrs, msg)
-            smtp.quit()
-        except:
-            self.handleError(record)
+        if self.username:
+            if self.secure is not None:
+                smtp.ehlo()
+                smtp.starttls(*self.secure)
+                smtp.ehlo()
+            smtp.login(self.username, self.password)
+        smtp.sendmail(self.fromaddr, self.toaddrs, msg)
+        smtp.quit()
 
     def emit(self, record):
         """

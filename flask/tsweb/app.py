@@ -52,5 +52,6 @@ if tswebapp.config['LOG_TO_EMAIL']:
                                'TSWeb log',
                                (tswebapp.config['EMAIL_FROM'], tswebapp.config['EMAIL_PASSWORD']),
                                tuple())
+    smtpHandler.setLevel(logging.WARNING)
     smtpHandler.setFormatter(smtpFormatter)
     tswebapp.logger.addHandler(smtpHandler)
