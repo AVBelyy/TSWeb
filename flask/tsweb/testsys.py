@@ -9,8 +9,6 @@ from .compat import unicode
 
 from traceback import format_stack
 
-_channels = {}
-
 teamname_regex = re.compile(r'^[A-Za-z\-\_0-9]{1,8}$')
 
 encode_regex = re.compile(r'([\x00-\x1f])'.encode('ascii'))
@@ -116,22 +114,14 @@ def select_channels(timeout, write=False, *args):
         [] if write else sockets, sockets if write else [], sockets, timeout)
     return wr if write else re
 
-def get_channel(name):
-    """Create new channel with *name*, or return existing one"""
-    if name in _channels and _channels[name].sock:
-        return _channels[name]
-    return Channel(name)
-
 class Channel():
     """Class, representing socket to TestSys"""
     def __init__(self, name, port=0):
-        if name in _channels and _channels[name].port:
-            port = _channels[name].port
-        else:
-            port = port
+        if not port:
+            port = ports.get(name, 0)
 
         if not port:
-            raise ValueError('Creating new channel without port')
+            raise ValueError('Unknown port for channel {}'.format(name))
 
         self.name = name
         self.port = port
@@ -141,8 +131,6 @@ class Channel():
         self.partial = None
         self.noblock = True
         self.flags = None
-
-        _channels[name] = self
 
     def open(self, nb):
         """Open channel. *nb* specifies non-blocking mode fore socket"""
@@ -157,10 +145,12 @@ class Channel():
                     (tswebapp.config['TESTSYS_HOST'], self.port))
             except socket.timeout:
                 tswebapp.logger.error("Connection failed: time-out")
+                self.close()
                 raise ConnectionFailedException()
             except socket.error as e:
                 tswebapp.logger.error(
                     "Connection failed, {0}".format(e))
+                self.close()
                 raise ConnectionFailedException()
             self.sock.setblocking(not nb)
 
@@ -170,10 +160,11 @@ class Channel():
             try:
                 self.sock.shutdown(socket.SHUT_RDWR)
                 self.sock.close()
-                self.sock = None
             except socket.error as e:
                 tswebapp.logger.error(
                     "Error while closing socket, {0}".format(e))
+            finally:
+                self.sock = None
 
     def send(self, msg, timeout=0, encoding='cp866'):
         """Send message *msg* to socket. *msg* must be dict"""
@@ -193,6 +184,7 @@ class Channel():
                     "Error sending data to socket, {0}, {1}.\n{2} \n{3}".format(
                         errno.errorcode.get(e.errno, ''), e.strerror, e, ''.join(format_stack()))
                 )
+                self.close()
                 raise CommunicationException(
                     "Error on socket, may be TestSys is down?")
             tot = res if res < 0 else tot + res
@@ -217,6 +209,7 @@ class Channel():
                     "Non-blocking operation on not ready socket")
                 return
             else:
+                self.close()
                 raise e
 
         tswebapp.logger.debug("(read {0} bytes)".format(len(buff)))
@@ -268,6 +261,7 @@ class Channel():
             if not sockets:
                 tswebapp.logger.debug("Timeout reached while receiveing \
 from {0.sock} port {0.port}".format(self))
+                self.close()
                 break
 
             if not self._recv(encoding):
@@ -287,12 +281,12 @@ from {0.sock} port {0.port}".format(self))
 
         return R
 
-_channels = {
-    'CONSOLE': Channel('CONSOLE', 17240),
-    'SUBMIT': Channel('SUBMIT', 17241),
-    'MSG': Channel('MSG', 17242),
-    'MONITOR': Channel('MONITOR', 17243),
-    'PRINTSOL': Channel('PRINTSOL', 17244)
+ports = {
+    'CONSOLE': 17240,
+    'SUBMIT': 17241,
+    'MSG': 17242,
+    'MONITOR': 17243,
+    'PRINTSOL': 17244
 }
 
 def valid_teamname(name):

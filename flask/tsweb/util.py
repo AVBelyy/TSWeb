@@ -61,7 +61,7 @@ def communicate(chan, request=None, check_empty=True, encoding='cp866'):
             except testsys.ConnectionFailedException as ex:
                 return ('error', error(ex))
     else:
-        channel = testsys.get_channel(chan)
+        channel = testsys.Channel(chan)
         try:
             channel.open(1)
         except testsys.ConnectionFailedException as ex:

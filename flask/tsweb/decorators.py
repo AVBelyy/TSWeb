@@ -49,7 +49,7 @@ def channel_user(chan):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            channel = testsys.get_channel(chan)
+            channel = testsys.Channel(chan)
             try:
                 channel.open(1)
             except testsys.ConnectionFailedException as e:
