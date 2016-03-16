@@ -10,6 +10,7 @@ from flask.ext.babel import gettext
 from chardet import detect
 
 from . import testsys
+from .app import tswebapp
 
 def redirector(url, **kwargs):
     """Render custom redirection (HTTP 302) response, passing *kwargs* to
@@ -143,4 +144,5 @@ def detect_and_convert(string, target_encoding=None):
         else:
             return new_string
     except:
+        tswebapp.logger.error("Could not convert string", exc_info=True, stack_info=True)
         return string  # In case of error try to send raw data...
