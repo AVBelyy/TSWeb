@@ -136,6 +136,10 @@ def detect_and_convert(string, target_encoding=None):
     if not string:
         return ''
 
+    if not isinstance(string, bytes):
+        # Do not convert unicode objects
+        return string
+
     try:
         encoding = detect(string)['encoding']
         new_string = string.decode(encoding)
