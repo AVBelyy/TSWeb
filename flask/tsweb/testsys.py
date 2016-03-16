@@ -213,7 +213,7 @@ class Channel():
                 raise e
 
         tswebapp.logger.debug("(read {0} bytes)".format(len(buff)))
-        tswebapp.logger.info("(BUFF: |{0}|)".format(buff))
+        tswebapp.logger.debug("(BUFF: |{0}|)".format(buff))
 
         if self.partial:
             buff = self.partial + buff
