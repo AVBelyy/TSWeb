@@ -1,0 +1,53 @@
+diff --git a/flask/tsweb/testsys.py b/flask/tsweb/testsys.py
+index c287ef1..f27372d 100644
+--- a/flask/tsweb/testsys.py
++++ b/flask/tsweb/testsys.py
+@@ -72,20 +72,26 @@ def select_channels(timeout, write=False, *args):
+ 
+ def get_channel(name):
+     """Create new channel with *name*, or return existing one"""
+-    if name in _channels and _channels[name].sock:
+-        return _channels[name]
++#    if name in _channels and _channels[name].sock:
++#        return _channels[name]
+     return Channel(name)
+ 
+ class Channel():
+     """Class, representing socket to TestSys"""
+     def __init__(self, name, port=0):
+-        if name in _channels and _channels[name].port:
+-            port = _channels[name].port
+-        else:
+-            port = port
++#        if name in _channels and _channels[name].port:
++#            port = _channels[name].port
++#        else:
++#            port = port
+ 
+         if not port:
+-            raise ValueError('Creating new channel without port')
++            if name in _ports:
++                port = _ports[name]
++            else:
++                raise ValueError('Unknown channel name {}'.format(name))
++
++#        if not port:
++#            raise ValueError('Creating new channel without port')
+ 
+         self.name = name
+         self.port = port
+@@ -248,6 +254,14 @@ _channels = {
+     'PRINTSOL': Channel('PRINTSOL', 17244)
+ }
+ 
++_ports = {
++    'CONSOLE':  17240,
++    'SUBMIT':   17241,
++    'MSG':      17242,
++    'MONITOR':  17243,
++    'PRINTSOL': 17244
++}
++
+ def valid_teamname(name):
+     """Check team name *name* for validity"""
+     return teamname_regex.match(name) is not None
